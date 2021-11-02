@@ -14,21 +14,25 @@ int main(){
     while(1){
         read_input(&y);
         set_position(&y);
-        write_position(y,&fifomot2);
+        write_position(y,fifomot2);
         sleep(1);
     }
 }
 
 void read_input(double *y){
-
+    return;
 }
 
-void write_position(double y, char fifomot2){
+void write_position(double y, char *fifomot2){
     int fd1;
     char input_string[80];
-    char format_string[80]="%d";
+    char format_string[80]="%f";
     sprintf(input_string, format_string, y);
+     printf("before writing value %f\n", y);
+    fflush(stdout);
     fd1 = open(fifomot2, O_WRONLY);
+    printf("writing value %f\n", y);
+    fflush(stdout);
     write(fd1, input_string, strlen(input_string) + 1);
     close(fd1);
 }

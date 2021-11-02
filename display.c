@@ -56,7 +56,7 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
             }
 }
 
-void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char fifomot1, char fifomot2)
+void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char *fifomot1, char *fifomot2)
 {
     char linemot1[80] = "";
     char linemot2[80] = "";
@@ -69,13 +69,26 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     fd2 = open(fifomot2, O_RDONLY);
 
     resmot1 = read(fd1, linemot1, 80);
-    resmot2 = read(fd1, linemot1, 80);
+    resmot2 = read(fd2, linemot2, 80);
 
-    char format_string_mot1[80] = "%d";
-    char format_string_mot2[80] = "%d";
+    char format_string_mot1[80] = "%f";
+    char format_string_mot2[80] = "%f";
 
-    sscanf(linemot1, format_string_mot1, x);
-    sscanf(linemot2, format_string_mot2, y);
+    float x_get = 0.;
+    float y_get = 0.;
+
+    sscanf(linemot1, format_string_mot1, &x_get);
+    sscanf(linemot2, format_string_mot2, &y_get);
+
+    *x = x_get;
+    *y = y_get;
+
+    printf("x is %f \n", *x);
+    fflush(stdout);
+    printf("y is %f \n", *y);
+    fflush(stdout);
+
+    
 
     close(fd1);
     close(fd2);
@@ -130,7 +143,7 @@ int main()
 
     while (1)
     {
-        get_position(&x, &y, rows, cols, display, &fifomot1, &fifomot2);
+        get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
         set_position(x, y, rows, cols, display);
         show_display(rows, cols, display);
         sleep(1);
