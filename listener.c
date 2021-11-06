@@ -17,12 +17,12 @@ int main(int argc, char *argv[])
         char recieved[1] = "";
         int fd1;
         int res;
-        char *myfifo = argv[1];
+        char *myfifo = "/tmp/z_motor";
         mkfifo(myfifo, 0666);
         fd1 = open(myfifo, O_RDONLY);
         res = read(fd1, recieved, 1);
-        printf("%s", recieved);
-        printf("confirmation");
+        printf("%s\n", recieved);
+        fflush(stdout);
         
         close(fd1);
         sleep(1);

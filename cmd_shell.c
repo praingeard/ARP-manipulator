@@ -128,22 +128,10 @@ void action(int cmd)
     }
 
     mkfifo(fifo, 0666);
-    pid_t son_pid = fork();
-
-    if (son_pid == 0)
-    {
-        char *args[3];
-        args[0] = "listener";
-        args[1] = fifo;
-        args[2] = NULL;
-        execv("listener", args);
-    }
-    else
-    {
-        fd = open(fifo, O_WRONLY);
-        write(fd, msg, strlen(msg) + 1);
-        close(fd);
-    }
+    fd = open(fifo, O_WRONLY);
+    write(fd, msg, strlen(msg) + 1);
+    close(fd);
+    
 }
 
 
@@ -160,13 +148,13 @@ int main()
             /*We have to check wether it is a command or not*/
             if (is_command(c, commands))
             { //communication avec les moteurs, peut-être faut-il aussi se souvenir de la valeur précédente
-                printf("\naction");
+                printf("action\n");
                 fflush(stdout);
                 action(c);
             }
             else
             {
-                printf("\nThis is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up");
+                printf("This is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up\n");
                 fflush(stdout);
             }
         }

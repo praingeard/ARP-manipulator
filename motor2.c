@@ -4,31 +4,47 @@
 #include <fcntl.h>
 #include <signal.h>
 
-int main(){
+int main()
+{
 
     double y = 0;
 
     char *fifomot2 = "/tmp/motor2";
     mkfifo(fifomot2, 0666);
 
-    while(1){
+    while (1)
+    {
         read_input(&y);
         set_position(&y);
-        write_position(y,fifomot2);
+        write_position(y, fifomot2);
         sleep(1);
     }
 }
 
-void read_input(double *y){
+void read_input(double *y)
+{
+    char recieved[1] = "";
+    int fd1;
+    int res;
+    char *myfifo = "/tmp/z_motor";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_RDONLY);
+    res = read(fd1, recieved, 1);
+    printf("%s\n", recieved);
+    fflush(stdout);
+
+    close(fd1);
+    sleep(1);
     return;
 }
 
-void write_position(double y, char *fifomot2){
+void write_position(double y, char *fifomot2)
+{
     int fd1;
     char input_string[80];
-    char format_string[80]="%f";
+    char format_string[80] = "%f";
     sprintf(input_string, format_string, y);
-     printf("before writing value %f\n", y);
+    printf("before writing value %f\n", y);
     fflush(stdout);
     fd1 = open(fifomot2, O_WRONLY);
     printf("writing value %f\n", y);
@@ -37,6 +53,7 @@ void write_position(double y, char *fifomot2){
     close(fd1);
 }
 
-void set_position(double *y){
+void set_position(double *y)
+{
     *y = *y + 1;
 }
