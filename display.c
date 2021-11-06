@@ -56,32 +56,31 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
             }
 }
 
-void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char *fifomot1, char *fifomot2)
+void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char *fifomot1)
 {
     char linemot1[80] = "";
-    char linemot2[80] = "";
     int fd1;
-    int fd2;
     int resmot1;
-    int resmot2;
 
     fd1 = open(fifomot1, O_RDONLY);
-    fd2 = open(fifomot2, O_RDONLY);
 
     resmot1 = read(fd1, linemot1, 80);
-    resmot2 = read(fd2, linemot2, 80);
 
-    char format_string_mot1[80] = "%f";
-    char format_string_mot2[80] = "%f";
+    char format_string_mot1[80] = "%c,%f";
 
-    float x_get = 0.;
-    float y_get = 0.;
+    float value_get = 0.;
+    char value_char;
 
-    sscanf(linemot1, format_string_mot1, &x_get);
-    sscanf(linemot2, format_string_mot2, &y_get);
+    sscanf(linemot1, format_string_mot1, &value_char, &value_get);
+    printf("value_got is %c,%f", value_char, value_get);
 
-    *x = x_get;
-    *y = y_get;
+    if (value_char == 'x'){
+        
+        *x = value_get;
+    }
+    else if(value_char == 'y'){
+        *y = value_get;
+    }
 
     printf("x is %f \n", *x);
     fflush(stdout);
@@ -91,7 +90,6 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     
 
     close(fd1);
-    close(fd2);
 }
 
 void show_display(size_t rows, size_t cols, char (*display)[cols])
@@ -128,12 +126,8 @@ int main()
     create_display(rows, cols, display);
     show_display(rows, cols, display);
 
-    char *fifomot1 = "/tmp/motor1";
+    char *fifomot1 = "/tmp/motor";
     mkfifo(fifomot1, 0666);
-
-    
-    char *fifomot2 = "/tmp/motor2";
-    mkfifo(fifomot2, 0666);
 
     double x = cols+1;
     double y = rows+1;
@@ -143,10 +137,9 @@ int main()
 
     while (1)
     {
-        get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
+        get_position(&x, &y, rows, cols, display, fifomot1);
         set_position(x, y, rows, cols, display);
         show_display(rows, cols, display);
-        sleep(1);
     }
 }
 

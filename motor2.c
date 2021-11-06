@@ -9,7 +9,7 @@ int main()
 
     double y = 0;
 
-    char *fifomot2 = "/tmp/motor2";
+    char *fifomot2 = "/tmp/motor";
     mkfifo(fifomot2, 0666);
 
     while (1)
@@ -42,8 +42,8 @@ void write_position(double y, char *fifomot2)
 {
     int fd1;
     char input_string[80];
-    char format_string[80] = "%f";
-    sprintf(input_string, format_string, y);
+    char format_string[80] = "%c,%f";
+    sprintf(input_string, format_string, 'y',y);
     printf("before writing value %f\n", y);
     fflush(stdout);
     fd1 = open(fifomot2, O_WRONLY);
