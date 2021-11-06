@@ -3,38 +3,37 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <string.h>
+#include <sys/time.h>
 
-int main()
-{
 
-    double x = 0;
-
-    char *fifomot1 = "/tmp/motor";
-    mkfifo(fifomot1, 0666);
-
-    while (1)
-    {
-        read_input(&x);
-        set_position(&x);
-        write_position(x, fifomot1);
-        sleep(1);
-    }
-}
-
-void read_input(double *x)
+void read_input(int *step)
 {
     char recieved[1] = "";
     int fd1;
     int res;
-    char *myfifo = "/tmp/x_motor";
+    char *myfifo = "/tmp/z_motor";
     mkfifo(myfifo, 0666);
     fd1 = open(myfifo, O_RDONLY);
+
     res = read(fd1, recieved, 1);
+    if (res < 0)
+    {
+        printf("no value\n");
+        fflush(stdout);
+    }
+
+    close(fd1);
+
     printf("%s\n", recieved);
     fflush(stdout);
 
-    close(fd1);
-    sleep(1);
+    if (recieved[0] == 'p')
+        *step = 1;
+    else if (recieved[0] == 'm')
+        *step = -1;
+    else
+        *step = 0;
 
     return;
 }
@@ -45,7 +44,7 @@ void write_position(double x, char *fifomot1)
     char input_string[80];
     char format_string[80] = "%c,%f";
     char value = 'x';
-    sprintf(input_string, format_string, value,x);
+    sprintf(input_string, format_string, value, x);
     printf("before writing value %f\n", x);
     fflush(stdout);
     fd1 = open(fifomot1, O_WRONLY);
@@ -55,8 +54,40 @@ void write_position(double x, char *fifomot1)
     close(fd1);
 }
 
-void set_position(double *x)
+void set_position(int *step, double *x)
 {
-    *x = *x + 1;
+    // random error between 0 and 1
+    double err = (double)rand() / (double)RAND_MAX;
+    // we modifiy the error so that it is between -0.1 and 0.1
+    err = 0.2 * err - 0.1;
+    *x = *x + *step * (1 + err);
+
+    if (*x < 0)
+        *x = 0;
+
+    if (*x > 14)
+        *x = 14;
+
     return;
+}
+
+int main()
+{
+
+    double x = 0;
+    int step = 0;
+
+    //initialisation of the random generator
+    time_t t;
+    srand((unsigned)time(&t));
+    char *fifomot1 = "/tmp/motor";
+    mkfifo(fifomot1, 0666);
+
+    while (1)
+    {
+        read_input(&step);
+        set_position(&step, &x);
+        write_position(x, fifomot1);
+        sleep(1);
+    }
 }

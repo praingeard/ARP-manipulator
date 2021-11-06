@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <math.h>
 
 void create_display(size_t rows, size_t cols, char (*display)[cols])
 {
@@ -28,8 +29,8 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
 {
     size_t i, j;
 
-    x = (int)x;
-    y = (int)y;
+    x = (int) round(x);
+    y = (int) round(y);
     for (i = 0; i < rows; i++)
         for (j = 0; j < cols; j++)
             if (i == x)

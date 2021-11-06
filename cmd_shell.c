@@ -28,14 +28,14 @@ les touches de commandes peuvent-elles être passées en arguments ?
 #include <string.h>
 #include <sys/stat.h>
 
-/*set as a global variable to allow quick change of settings ==> Which for now is not the cas, failure to use it with switch*/
-const int commands[6] = {113, 115, 100, 50, 53, 56}; // values for q, s, d and 2, 5, 8
+// values for q, s, d and 2, 5, 8
 #define LEFT 113
 #define STOPX 115
 #define RIGHT 100
 #define DOWN 50
 #define STOPZ 53
 #define UP 56
+const int commands[6] = {LEFT, STOPX, RIGHT, DOWN, STOPZ, UP};
 
 void set_mode(int want_key)
 /* Set the terminal in such a way that what is written as input does not appear */
@@ -92,47 +92,84 @@ int is_command(int pressed_key, const int cmds[6])
     return 0;
 }
 
+void noaction(char *fifo)
+{
+    int fd;  
+    char msg[1]= {'o'};
+    int res;
+
+    mkfifo(fifo, 0666);
+    printf("noaction\n");
+    fflush(stdout);
+
+    fd = open(fifo, O_WRONLY);
+    res = write(fd, msg, strlen(msg) + 1);
+
+    if (res < 0){
+        printf("no value\n");
+        fflush(stdout);
+    }
+    close(fd);
+    
+}
+
+
 void action(int cmd)
 {
     /*sends the command to the right motor*/
     int fd;
-    char *fifo;
+    char *fifo, *fifoNoaction;
     char msg[1];
 
     switch (cmd)
     {
     case LEFT:
         fifo = "/tmp/x_motor";
+        fifoNoaction = "/tmp/z_motor";
         msg[0] = 'p';
         break;
     case STOPX:
         fifo = "/tmp/x_motor";
+        fifoNoaction = "/tmp/z_motor";
         msg[0] = 's';
         break;
     case RIGHT:
         fifo = "/tmp/x_motor";
+        fifoNoaction = "/tmp/z_motor";
         msg[0] = 'm';
         break;
     case DOWN:
         fifo = "/tmp/z_motor";
+        fifoNoaction = "/tmp/x_motor";
         msg[0] = 'p';
         break;
     case STOPZ:
         fifo = "/tmp/z_motor";
+        fifoNoaction = "/tmp/x_motor";
         msg[0] = 's';
         break;
     case UP:
         fifo = "/tmp/z_motor";
+        fifoNoaction = "/tmp/x_motor";
         msg[0] = 'm';
         break;
     }
 
+    int res;
     mkfifo(fifo, 0666);
     fd = open(fifo, O_WRONLY);
-    write(fd, msg, strlen(msg) + 1);
+    
+    res = write(fd, msg, strlen(msg) + 1);
+    if (res < 0){
+        printf("no value\n");
+        fflush(stdout);
+    }
     close(fd);
+    noaction(fifoNoaction);
     
 }
+
+
 
 
 int main()
@@ -156,7 +193,16 @@ int main()
             {
                 printf("This is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up\n");
                 fflush(stdout);
+                noaction("/tmp/x_motor");
+                noaction("/tmp/z_motor");
             }
         }
+        else
+        {
+            noaction("/tmp/x_motor");
+            noaction("/tmp/z_motor");
+        }
+
+        sleep(2);
     }
 }
