@@ -9,20 +9,18 @@
 
 void read_input(int *step)
 {
-    char recieved[1] = "";
+    char recieved[1];
     int fd1;
     int res;
     char *myfifo = "/tmp/z_motor";
     mkfifo(myfifo, 0666);
     fd1 = open(myfifo, O_RDONLY);
-
-    res = read(fd1, recieved, 1);
+    res = read(fd1, recieved, 2);
     if (res < 0)
     {
         printf("no value\n");
         fflush(stdout);
     }
-
     close(fd1);
 
     printf("%s\n", recieved);
@@ -32,7 +30,7 @@ void read_input(int *step)
         *step = 1;
     else if (recieved[0] == 'm')
         *step = -1;
-    else
+    else if (recieved[0] == 's')
         *step = 0;
 
     return;
@@ -45,8 +43,6 @@ void write_position(double x, char *fifomot1)
     char format_string[80] = "%c,%f";
     char value = 'x';
     sprintf(input_string, format_string, value, x);
-    printf("before writing value %f\n", x);
-    fflush(stdout);
     fd1 = open(fifomot1, O_WRONLY);
     printf("writing value %f\n", x);
     fflush(stdout);

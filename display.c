@@ -29,8 +29,8 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
 {
     size_t i, j;
 
-    x = (int) round(x);
-    y = (int) round(y);
+    x = (int)round(x);
+    y = (int)round(y);
     for (i = 0; i < rows; i++)
         for (j = 0; j < cols; j++)
             if (i == x)
@@ -45,52 +45,55 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
                 }
             }
             else if (j == cols / 2)
-                {
-                    display[i][j] = '|';
-                }
+            {
+                display[i][j] = '|';
+            }
             else if (display[i][j] == '_')
             {
                 display[i][j] = '.';
             }
-            else if (display[i][j] == 'x'){
+            else if (display[i][j] == 'x')
+            {
                 display[i][j] = '.';
             }
 }
 
-void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char *fifomot1)
+void get_position(double *x, double *y, size_t rows, size_t cols, char (*display)[cols], char *fifomot1, char *fifomot2)
 {
     char linemot1[80] = "";
+    char linemot2[80] = "";
+
     int fd1;
+    int fd2;
     int resmot1;
+    int resmot2;
 
-    fd1 = open(fifomot1, O_RDONLY);
+        fd1 = open(fifomot1, O_RDONLY);
+        fd2 = open(fifomot2, O_RDONLY);
+        resmot1 = read(fd1, linemot1, 80);
+        resmot2 = read(fd2, linemot2, 80);
 
-    resmot1 = read(fd1, linemot1, 80);
+        char format_string_mot1[80] = "%c,%f";
+        char format_string_mot2[80] = "%c,%f";
 
-    char format_string_mot1[80] = "%c,%f";
 
-    float value_get = 0.;
-    char value_char;
+        float value_get1 = 0.;
+        char value_char1;
+        float value_get2 = 0.;
+        char value_char2;
 
-    sscanf(linemot1, format_string_mot1, &value_char, &value_get);
-    printf("value_got is %c,%f", value_char, value_get);
+        sscanf(linemot1, format_string_mot1, &value_char1, &value_get1);
+        sscanf(linemot2, format_string_mot2, &value_char2, &value_get2);
+        *x = value_get1;
+        *y = value_get2;
 
-    if (value_char == 'x'){
-        
-        *x = value_get;
-    }
-    else if(value_char == 'y'){
-        *y = value_get;
-    }
+        printf("x is %f \n", *x);
+        fflush(stdout);
+        printf("y is %f \n", *y);
+        fflush(stdout);
 
-    printf("x is %f \n", *x);
-    fflush(stdout);
-    printf("y is %f \n", *y);
-    fflush(stdout);
-
-    
-
-    close(fd1);
+        close(fd1);
+        close(fd2);
 }
 
 void show_display(size_t rows, size_t cols, char (*display)[cols])
@@ -129,16 +132,19 @@ int main()
 
     char *fifomot1 = "/tmp/motor";
     mkfifo(fifomot1, 0666);
+     char *fifomot2 = "/tmp/motor2";
+    mkfifo(fifomot2, 0666);
 
-    double x = cols+1;
-    double y = rows+1;
+
+    double x = cols + 1;
+    double y = rows + 1;
 
     printf("initialization complete \n");
     fflush(stdout);
 
     while (1)
     {
-        get_position(&x, &y, rows, cols, display, fifomot1);
+        get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
         set_position(x, y, rows, cols, display);
         show_display(rows, cols, display);
     }

@@ -95,12 +95,11 @@ int is_command(int pressed_key, const int cmds[6])
 void noaction(char *fifo)
 {
     int fd;  
-    char msg[1]= {'o'};
+    char msg[1];
+    msg[0] = 'o';
     int res;
 
     mkfifo(fifo, 0666);
-    printf("noaction\n");
-    fflush(stdout);
 
     fd = open(fifo, O_WRONLY);
     res = write(fd, msg, strlen(msg) + 1);
