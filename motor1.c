@@ -6,6 +6,34 @@
 #include <string.h>
 #include <sys/time.h>
 
+char *fifomot1 = "/tmp/motor";
+double x = 0.0;
+
+void sig_handler(int signo)
+{
+    printf("received SIGNAL\n");
+    fflush(stdout);
+    if (signo == SIGINT){
+        printf("received RESET\n");
+        fflush(stdout);
+        int step = -1;
+        while(1){
+            if (x < 0.1){
+                break;
+            }
+            set_position(&step,&x);
+            write_position(x, fifomot1);
+            sleep(1);
+        }
+        char *myfifo = "/tmp/resetmot1";
+        mkfifo(myfifo, 0666);
+        int fd1;
+        fd1 = open(myfifo, O_WRONLY);
+        printf("RESET end\n");
+        fflush(stdout);
+        close(fd1);
+    }
+}
 
 void read_input(int *step)
 {
@@ -70,17 +98,18 @@ void set_position(int *step, double *x)
 int main()
 {
 
-    double x = 0;
     int step = 0;
 
     //initialisation of the random generator
     time_t t;
     srand((unsigned)time(&t));
-    char *fifomot1 = "/tmp/motor";
     mkfifo(fifomot1, 0666);
 
     while (1)
     {
+        if (signal(SIGINT, sig_handler) == SIG_ERR){
+            printf("\ncan't catch SIGINT\n");
+        }
         read_input(&step);
         set_position(&step, &x);
         write_position(x, fifomot1);

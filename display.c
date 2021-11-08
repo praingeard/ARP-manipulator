@@ -5,6 +5,28 @@
 #include <signal.h>
 #include <math.h>
 
+void reset()
+{
+    char msg[1];
+    msg[0] = 'r';
+    int fd1,res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent reset\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+void sig_handler(int signo)
+{
+    if (signo == SIGINT){
+        reset();
+    }
+}
+
 void create_display(size_t rows, size_t cols, char (*display)[cols])
 {
     size_t i, j;
@@ -119,6 +141,10 @@ void show_display(size_t rows, size_t cols, char (*display)[cols])
 
 int main()
 {
+    if (signal(SIGINT, sig_handler) == SIG_ERR){
+            printf("\ncan't catch SIGINT\n");
+        }
+    
     size_t rows = 0;
     size_t cols = 0;
 

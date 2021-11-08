@@ -1,6 +1,8 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -20,6 +22,16 @@ void getFileCreationTime(char *path, struct tm *last_time)
 
 void reset()
 {
+    char msg[1];
+    msg[0] = 'r';
+    int fd1,res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent reset\n");
+    fflush(stdout);
+    close(fd1);
     return;
 }
 
@@ -37,9 +49,10 @@ int main()
         current_time = localtime(&rawtime);
         time_spent = (current_time->tm_hour * 3600 - last_time.tm_hour * 3600) + (current_time->tm_min * 60 - last_time.tm_min * 60) + (current_time->tm_sec - last_time.tm_sec);
         printf("time_spent : %i\n", time_spent);
-        if (time_spent > 60)
+        if (time_spent > 3600)
         {
             reset();
+            sleep(30);
         }
     }
 }

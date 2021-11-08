@@ -6,6 +6,46 @@
 #include <string.h>
 #include <sys/time.h>
 
+char *fifomot2 = "/tmp/motor2";
+double y = 0.0;
+
+void sig_handler(int signo)
+{
+    printf("received SIGNAL\n");
+    fflush(stdout);
+    if (signo == SIGINT){
+        printf("received RESET\n");
+        fflush(stdout);
+        int step = -1;
+        mkfifo(fifomot2, 0666);
+        char *fifomot1 = "/tmp/motor";
+        mkfifo(fifomot1, 0666);
+        int fd1;
+        while(1){
+            if (y < 0.1){
+                 printf("break\n");
+                fflush(stdout);
+                break;
+            }
+            printf("running\n");
+            fflush(stdout);
+            fd1 = open(fifomot1, O_WRONLY);
+            close(fd1);
+            set_position(&step,&y);
+            printf("value is %f\n", y);
+            fflush(stdout);
+            write_position(y, fifomot2);
+            sleep(1);
+        }
+        char *myfifo = "/tmp/resetmot2";
+        mkfifo(myfifo, 0666);
+        int fd2;
+        fd2 = open(myfifo, O_WRONLY);
+        printf("RESET end\n");
+        fflush(stdout);
+        close(fd2);
+    }
+}
 
 void read_input(int *step)
 {
@@ -44,6 +84,8 @@ void write_position(double y, char *fifomot2)
     char input_string[80];
     char format_string[80] = "%c, %f";
     sprintf(input_string, format_string,'y', y);
+    printf("before writing value %f\n", y);
+    fflush(stdout);
     fd1 = open(fifomot2, O_WRONLY);
     printf("writing value %f\n", y);
     fflush(stdout);
@@ -72,14 +114,15 @@ void set_position(int *step, double *y)
 
 int main()
 {
+    if (signal(SIGINT, sig_handler) == SIG_ERR){
+            printf("\ncan't catch SIGINT\n");
+        }
 
-    double y = 0;
     int step = 0;
 
     //initialisation of the random generator
     time_t t;
     srand((unsigned)time(&t));
-    char *fifomot2 = "/tmp/motor2";
     mkfifo(fifomot2, 0666);
 
     while (1)
