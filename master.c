@@ -30,6 +30,26 @@ void reset(pid_t pid_mot1, pid_t pid_mot2)
     fflush(stdout);
 }
 
+void pause_prog(pid_t pid_mot1, pid_t pid_mot2)
+{
+    printf("starting PAUSE for %i and %i\n", pid_mot1, pid_mot2);
+    fflush(stdout);
+
+    kill(pid_mot1, SIGUSR1);
+    kill(pid_mot2, SIGUSR2);
+}
+
+void resume(pid_t pid_mot1, pid_t pid_mot2)
+{
+    printf("starting RESUME for %i and %i\n", pid_mot1, pid_mot2);
+    fflush(stdout);
+
+    kill(pid_mot1, SIGUSR2);
+    kill(pid_mot2, SIGUSR2);
+}
+
+
+
 int main()
 {
     char processes[NUMBER_OF_PROCESSES][MAX_NAME_SIZE] =
@@ -78,6 +98,14 @@ int main()
         if (msg[0] == 'r')
         {
             reset(pid, pid2);
+        }
+        if (msg[0] == 'p')
+        {
+            pause_prog(pid, pid2);
+        }
+        if (msg[0] == 't')
+        {
+            resume(pid, pid2);
         }
     }
 }

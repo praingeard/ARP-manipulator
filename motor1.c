@@ -13,15 +13,18 @@ void sig_handler(int signo)
 {
     printf("received SIGNAL\n");
     fflush(stdout);
-    if (signo == SIGINT){
+    if (signo == SIGINT)
+    {
         printf("received RESET\n");
         fflush(stdout);
         int step = -1;
-        while(1){
-            if (x < 0.1){
+        while (1)
+        {
+            if (x < 0.1)
+            {
                 break;
             }
-            set_position(&step,&x);
+            set_position(&step, &x);
             write_position(x, fifomot1);
             sleep(1);
         }
@@ -32,6 +35,16 @@ void sig_handler(int signo)
         printf("RESET end\n");
         fflush(stdout);
         close(fd1);
+    }
+    if (signo == SIGUSR1)
+    {
+        printf("system paused\n");
+        fflush(stdout);
+        pause();
+    }
+    if (signo == SIGUSR2){
+        printf("system resumed\n");
+        fflush(stdout);
     }
 }
 
@@ -107,7 +120,8 @@ int main()
 
     while (1)
     {
-        if (signal(SIGINT, sig_handler) == SIG_ERR){
+        if (signal(SIGINT, sig_handler) == SIG_ERR)
+        {
             printf("\ncan't catch SIGINT\n");
         }
         read_input(&step);

@@ -45,6 +45,16 @@ void sig_handler(int signo)
         fflush(stdout);
         close(fd2);
     }
+    if (signo == SIGUSR1)
+    {
+        printf("system paused\n");
+        fflush(stdout);
+        pause();
+    }
+    if (signo == SIGUSR2){
+        printf("system resumed\n");
+        fflush(stdout);
+    }
 }
 
 void read_input(int *step)

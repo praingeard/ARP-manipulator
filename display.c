@@ -4,12 +4,21 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <math.h>
+#include <string.h>
+#include <termios.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#define PAUSE 113
+#define RESUME 15
+const int commands[2] = {PAUSE, RESUME};
 
 void reset()
 {
     char msg[1];
     msg[0] = 'r';
-    int fd1,res;
+    int fd1, res;
     char *myfifo = "/tmp/reset";
     mkfifo(myfifo, 0666);
     fd1 = open(myfifo, O_WRONLY);
@@ -20,10 +29,71 @@ void reset()
     return;
 }
 
+void set_mode(int want_key)
+/* Set the terminal in such a way that what is written as input does not appear */
+{
+    static struct termios old, new_one;
+
+    if (!want_key)
+    { /*If we detected an input from the user, we set the attributes to the previous values, with an immediate update*/
+        tcsetattr(STDIN_FILENO, TCSANOW, &old);
+        //return;
+    }
+
+    else
+    { /*if nothing was detected, we change get the old settings to disabled the echo to the terminal as well as the erasure and kill of the inpur*/
+        tcgetattr(STDIN_FILENO, &old);
+        new_one = old;
+        new_one.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &new_one);
+    }
+}
+
+void pause_prog()
+{
+    char msg[1];
+    msg[0] = 'p';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent pause\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+void resume()
+{
+    char msg[1];
+    msg[0] = 't';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent resume\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
 void sig_handler(int signo)
 {
-    if (signo == SIGINT){
+    if (signo == SIGINT)
+    {
         reset();
+    }
+
+    if (signo == SIGUSR1)
+    {
+        pause_prog();
+    }
+
+    if (signo == SIGUSR2)
+    {
+        resume();
     }
 }
 
@@ -90,32 +160,31 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     int resmot1;
     int resmot2;
 
-        fd1 = open(fifomot1, O_RDONLY);
-        fd2 = open(fifomot2, O_RDONLY);
-        resmot1 = read(fd1, linemot1, 80);
-        resmot2 = read(fd2, linemot2, 80);
+    fd1 = open(fifomot1, O_RDONLY);
+    fd2 = open(fifomot2, O_RDONLY);
+    resmot1 = read(fd1, linemot1, 80);
+    resmot2 = read(fd2, linemot2, 80);
 
-        char format_string_mot1[80] = "%c,%f";
-        char format_string_mot2[80] = "%c,%f";
+    char format_string_mot1[80] = "%c,%f";
+    char format_string_mot2[80] = "%c,%f";
 
+    float value_get1 = 0.;
+    char value_char1;
+    float value_get2 = 0.;
+    char value_char2;
 
-        float value_get1 = 0.;
-        char value_char1;
-        float value_get2 = 0.;
-        char value_char2;
+    sscanf(linemot1, format_string_mot1, &value_char1, &value_get1);
+    sscanf(linemot2, format_string_mot2, &value_char2, &value_get2);
+    *x = value_get1;
+    *y = value_get2;
 
-        sscanf(linemot1, format_string_mot1, &value_char1, &value_get1);
-        sscanf(linemot2, format_string_mot2, &value_char2, &value_get2);
-        *x = value_get1;
-        *y = value_get2;
+    printf("x is %f \n", *x);
+    fflush(stdout);
+    printf("y is %f \n", *y);
+    fflush(stdout);
 
-        printf("x is %f \n", *x);
-        fflush(stdout);
-        printf("y is %f \n", *y);
-        fflush(stdout);
-
-        close(fd1);
-        close(fd2);
+    close(fd1);
+    close(fd2);
 }
 
 void show_display(size_t rows, size_t cols, char (*display)[cols])
@@ -139,12 +208,65 @@ void show_display(size_t rows, size_t cols, char (*display)[cols])
     return;
 }
 
+int get_key()
+{
+    int c = 0;
+    struct timeval tv;
+    fd_set fs;
+    tv.tv_usec = tv.tv_sec = 0;
+    int ret_val; // m, n;
+    //char line[80];
+
+    FD_ZERO(&fs);
+    FD_SET(STDIN_FILENO, &fs);
+    ret_val = select(STDIN_FILENO + 1, &fs, 0, 0, &tv);
+
+    if (ret_val == -1)
+        perror("select()");
+    else if (ret_val)
+    {
+        // (FD_ISSET(STDIN_FILENO, &fs)) will be true
+        c = getchar();
+        set_mode(0);
+    }
+    return c;
+}
+
+int is_command(int pressed_key, const int cmds[6])
+{
+    /*check if the key pressed belongs to the set of commands*/
+    for (int idx = 0; idx < 6; idx++)
+    {
+        if (pressed_key == cmds[idx])
+            return 1;
+    }
+    return 0;
+}
+
+void action(int cmd)
+{
+    struct sigaction sa;
+    /* set sa to zero using the memset() C library function */
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = &sig_handler;
+    switch (cmd)
+    {
+    case PAUSE:
+        sigaction(SIGUSR1, &sa, NULL);
+        break;
+    case RESUME:
+        sigaction(SIGUSR2, &sa, NULL);
+        break;
+    }
+}
+
 int main()
 {
-    if (signal(SIGINT, sig_handler) == SIG_ERR){
-            printf("\ncan't catch SIGINT\n");
-        }
-    
+    if (signal(SIGINT, sig_handler) == SIG_ERR)
+    {
+        printf("\ncan't catch RESET\n");
+    }
+
     size_t rows = 0;
     size_t cols = 0;
 
@@ -158,18 +280,30 @@ int main()
 
     char *fifomot1 = "/tmp/motor";
     mkfifo(fifomot1, 0666);
-     char *fifomot2 = "/tmp/motor2";
+    char *fifomot2 = "/tmp/motor2";
     mkfifo(fifomot2, 0666);
-
 
     double x = cols + 1;
     double y = rows + 1;
+
+    int c;
 
     printf("initialization complete \n");
     fflush(stdout);
 
     while (1)
     {
+        set_mode(1);
+        if (c = get_key())
+        {
+            /*if I am not completly lost, this means the user pressed a key*/
+            /*We have to check wether it is a command or not*/
+            printf("%i \n", c);
+            if (is_command(c, commands))
+            { //communication avec les moteurs, peut-être faut-il aussi se souvenir de la valeur précédente
+                action(c);
+            }
+        }
         get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
         set_position(x, y, rows, cols, display);
         show_display(rows, cols, display);
