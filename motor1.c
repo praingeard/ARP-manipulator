@@ -124,6 +124,14 @@ int main()
         {
             printf("\ncan't catch SIGINT\n");
         }
+        if (signal(SIGUSR1, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGUSR1\n");
+        }
+        if (signal(SIGUSR2, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGUSR2\n");
+        }
         read_input(&step);
         set_position(&step, &x);
         write_position(x, fifomot1);

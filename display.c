@@ -10,8 +10,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define PAUSE 113
-#define RESUME 15
+#define PAUSE 112
+#define RESUME 114
 const int commands[2] = {PAUSE, RESUME};
 
 void reset()
@@ -84,16 +84,6 @@ void sig_handler(int signo)
     if (signo == SIGINT)
     {
         reset();
-    }
-
-    if (signo == SIGUSR1)
-    {
-        pause_prog();
-    }
-
-    if (signo == SIGUSR2)
-    {
-        resume();
     }
 }
 
@@ -235,7 +225,7 @@ int get_key()
 int is_command(int pressed_key, const int cmds[6])
 {
     /*check if the key pressed belongs to the set of commands*/
-    for (int idx = 0; idx < 6; idx++)
+    for (int idx = 0; idx < 2; idx++)
     {
         if (pressed_key == cmds[idx])
             return 1;
@@ -245,17 +235,26 @@ int is_command(int pressed_key, const int cmds[6])
 
 void action(int cmd)
 {
-    struct sigaction sa;
-    /* set sa to zero using the memset() C library function */
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = &sig_handler;
     switch (cmd)
     {
     case PAUSE:
-        sigaction(SIGUSR1, &sa, NULL);
+        pause_prog();
+        int c;
+        while (1)
+        {
+            set_mode(1);
+            if (c = get_key())
+            {
+                if (c == RESUME)
+                {
+                    action(c);
+                    break;
+                }
+            }
+        }
         break;
     case RESUME:
-        sigaction(SIGUSR2, &sa, NULL);
+        resume();
         break;
     }
 }
@@ -296,11 +295,8 @@ int main()
         set_mode(1);
         if (c = get_key())
         {
-            /*if I am not completly lost, this means the user pressed a key*/
-            /*We have to check wether it is a command or not*/
-            printf("%i \n", c);
-            if (is_command(c, commands))
-            { //communication avec les moteurs, peut-être faut-il aussi se souvenir de la valeur précédente
+            if (c == PAUSE)
+            {
                 action(c);
             }
         }
