@@ -38,11 +38,13 @@ les touches de commandes peuvent-elles être passées en arguments ?
 #define DOWN 50
 #define STOPZ 53
 #define UP 56
-
+// We store them in an array for convenience 
 const int commands[6] = {LEFT, STOPX, RIGHT, DOWN, STOPZ, UP};
 
+
+
 void set_mode(int want_key)
-/* Set the terminal in such a way that what is written as input does not appear */
+// Auxilliary function needed to get the input from the keyboard
 {
     static struct termios old, new_one;
 
@@ -61,29 +63,39 @@ void set_mode(int want_key)
     }
 }
 
+
+
+
 int get_key()
+// Check wether the user has pressed a key on the keyboard, monitoring the terminal
 {
     int c = 0;
+    //tv is a deadline, we set it at zero because we do not want to wait with select
     struct timeval tv;
     fd_set fs;
     tv.tv_usec = tv.tv_sec = 0;
-    int ret_val; // m, n;
-    //char line[80];
+    int ret_val; 
 
+
+	//STDIN_FILENO corresponds to the input terminal
     FD_ZERO(&fs);
     FD_SET(STDIN_FILENO, &fs);
     ret_val = select(STDIN_FILENO + 1, &fs, 0, 0, &tv);
 
+	//We check if there has been an error
     if (ret_val == -1)
         perror("select()");
     else if (ret_val)
     {
         // (FD_ISSET(STDIN_FILENO, &fs)) will be true
+        // We update c with the numerical code associated with the key
         c = getchar();
         set_mode(0);
     }
     return c;
 }
+
+
 
 int is_command(int pressed_key, const int cmds[6])
 {
@@ -96,18 +108,25 @@ int is_command(int pressed_key, const int cmds[6])
     return 0;
 }
 
+
 void noaction(char *fifo)
 {
+	/* In case the pressed key is no a command key, we still send a message
+	 * This is to avoid having the other process blocked by an pipe opened
+	 * on one side only */
+	 
     int fd;  
     char msg[1];
+    // o means the motors shoud not change
     msg[0] = 'o';
     int res;
 
+	// opening of the named pipe
     mkfifo(fifo, 0666);
-
     fd = open(fifo, O_WRONLY);
     res = write(fd, msg, strlen(msg) + 1);
 
+	//Check if no error occured
     if (res < 0){
         printf("no value\n");
         fflush(stdout);
@@ -117,57 +136,74 @@ void noaction(char *fifo)
 }
 
 
-void action(int cmd)
+void action(int cmd, char *name_cmd)
 {
     /*sends the command to the right motor*/
     int fd;
-    char *fifo, *fifoNoaction;
+    char *fifo, *fifoNoaction; //We will send a command on one pipe and just 'o' on the other
     char msg[1];
 
     switch (cmd)
     {
+	//The commands left, right and stopx are for the motor 1
     case LEFT:
+		//fifo is the pipe that will send the command
         fifo = "/tmp/x_motor";
+        // fifoNoaction is the one sending an 'o' to say nothing is to be changed
         fifoNoaction = "/tmp/z_motor";
-        msg[0] = 'p';
+        // We send a letter to the motor, 'm' for minus, 's' for stop, 'p' for plus
+        msg[0] = 'm';
+        name_cmd = "LEFT";
         break;
     case STOPX:
         fifo = "/tmp/x_motor";
         fifoNoaction = "/tmp/z_motor";
         msg[0] = 's';
+        name_cmd = "STOPX";
         break;
     case RIGHT:
         fifo = "/tmp/x_motor";
         fifoNoaction = "/tmp/z_motor";
-        msg[0] = 'm';
+        msg[0] = 'p';
+        name_cmd = "RIGHT";
         break;
+        
+        //The commands down, up and stopz are for the motor 2
     case DOWN:
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 'p';
+        name_cmd = "DOWN";
         break;
     case STOPZ:
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 's';
+        name_cmd = "STOPZ";
         break;
     case UP:
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 'm';
+        name_cmd = "UP";
         break;
     }
 
+	//Now that the messages and the names of the pipes are set, we can call open them
     int res;
     mkfifo(fifo, 0666);
     fd = open(fifo, O_WRONLY);
+    
     
     res = write(fd, msg, strlen(msg) + 1);
     if (res < 0){
         printf("no value\n");
         fflush(stdout);
     }
+    
     close(fd);
+    
+    //We use noaction to send 'o' to the other motor
     noaction(fifoNoaction);
     
 }
@@ -177,27 +213,33 @@ void action(int cmd)
 int main(int argc, char *argv[])
 {
     int c;
-	log_entry(argv[1], "INFO", __FILE__, __LINE__, "Execution started");
+    char *name_cmd;
+    
+    // Entry to the logfile whose named was created by master and contained in argv[1]
+	log_entry(argv[1], "NOTICE", __FILE__, __LINE__, "Execution started");
 
     while (1)
     {
         set_mode(1);
+        
+        // Continously checking for a user input
         if (c = get_key())
-        {
-            /*if I am not completly lost, this means the user pressed a key*/
+        {            
             /*We have to check wether it is a command or not*/
             if (is_command(c, commands))
-            { //communication avec les moteurs, peut-être faut-il aussi se souvenir de la valeur précédente
-                printf("action\n");
+            { 
+				action(c, name_cmd);
+				char *msg = "The following command was pressed : ";
+				strcat(msg, name_cmd);
+				log_entry(argv[1], "INFO", __FILE__, __LINE__, msg);
+				printf("You pressed the command %s", name_cmd);
                 fflush(stdout);
-                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "a command has been given");
-                action(c);
             }
             else
             {
+				// print the working commands
                 printf("This is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up\n");
                 fflush(stdout);
-                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "a wrong key has been pressed");
                 noaction("/tmp/x_motor");
                 noaction("/tmp/z_motor");
             }
