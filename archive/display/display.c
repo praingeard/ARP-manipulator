@@ -9,16 +9,18 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "../logarp/logarp.h"
 
+//get keyboard keys 
 #define PAUSE 112
 #define RESUME 114
 const int commands[2] = {PAUSE, RESUME};
-#include "../logarp/logarp.h"
 
 int is_paused = 0;
 
 void reset()
 {
+    //send reset value to master
     char msg[1];
     msg[0] = 'r';
     int fd1, res;
@@ -54,6 +56,7 @@ void set_mode(int want_key)
 
 void pause_prog()
 {
+    //send pause value to master
     is_paused = 1;
     char msg[1];
     msg[0] = 'p';
@@ -70,6 +73,7 @@ void pause_prog()
 
 void resume()
 {
+    //send resume value to master
     is_paused = 0;
     char msg[1];
     msg[0] = 't';
@@ -86,18 +90,22 @@ void resume()
 
 void create_display(size_t rows, size_t cols, char (*display)[cols])
 {
+    //create and show empty display
     size_t i, j;
-
+    
     for (i = 0; i < rows; i++)
         for (j = 0; j < cols; j++)
+            //middle bar
             if (j == cols / 2)
             {
                 display[i][j] = '|';
             }
+            //lines for x axis
             else if (i == 1)
             {
                 display[i][j] = '_';
             }
+            //points everywhere else
             else
             {
                 display[i][j] = '.';
@@ -106,14 +114,17 @@ void create_display(size_t rows, size_t cols, char (*display)[cols])
 
 void set_position(double x, double y, size_t rows, size_t cols, char (*display)[cols])
 {
+    //set x position on display
     size_t i, j;
 
+    //get closest int
     x = (int)round(x);
     y = (int)round(y);
     for (i = 0; i < rows; i++)
         for (j = 0; j < cols; j++)
             if (i == x)
             {
+                //show x position
                 if (j == y)
                 {
                     display[i][j] = 'x';
@@ -123,6 +134,7 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
                     display[i][j] = '_';
                 }
             }
+            //else show normal display
             else if (j == cols / 2)
             {
                 display[i][j] = '|';
@@ -131,6 +143,7 @@ void set_position(double x, double y, size_t rows, size_t cols, char (*display)[
             {
                 display[i][j] = '.';
             }
+            //remove old position
             else if (display[i][j] == 'x')
             {
                 display[i][j] = '.';
@@ -147,11 +160,13 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     int resmot1;
     int resmot2;
 
+    //use 2 pipes to get position for x and y
     fd1 = open(fifomot1, O_RDONLY);
     fd2 = open(fifomot2, O_RDONLY);
     resmot1 = read(fd1, linemot1, 80);
     resmot2 = read(fd2, linemot2, 80);
 
+    //lines are of format "x, position"
     char format_string_mot1[80] = "%c,%f";
     char format_string_mot2[80] = "%c,%f";
 
@@ -160,6 +175,7 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     float value_get2 = 0.;
     char value_char2;
 
+    //get the values
     sscanf(linemot1, format_string_mot1, &value_char1, &value_get1);
     sscanf(linemot2, format_string_mot2, &value_char2, &value_get2);
     *x = value_get1;
@@ -170,13 +186,14 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     printf("y is %f \n", *y);
     fflush(stdout);
 
+    //close pipes
     close(fd1);
     close(fd2);
 }
 
 void show_display(size_t rows, size_t cols, char (*display)[cols])
 {
-
+    //print display on command shell
     size_t i, j;
 
     for (i = 0; i < rows; i++)
@@ -202,7 +219,6 @@ int get_key()
     fd_set fs;
     tv.tv_usec = tv.tv_sec = 0;
     int ret_val; // m, n;
-    //char line[80];
 
     FD_ZERO(&fs);
     FD_SET(STDIN_FILENO, &fs);
@@ -232,9 +248,11 @@ int is_command(int pressed_key, const int cmds[6])
 
 void action(int cmd)
 {
+    //actions for pause and reset
     switch (cmd)
     {
     case PAUSE:
+        //pause
         pause_prog();
         int c;
         while (is_paused == 1)
@@ -242,6 +260,7 @@ void action(int cmd)
             set_mode(1);
             if (c = get_key())
             {
+                //resume if needed
                 if (c == RESUME)
                 {
                     action(c);
@@ -250,6 +269,7 @@ void action(int cmd)
         }
         break;
     case RESUME:
+        //send resume to master 
         resume();
         break;
     }
@@ -257,15 +277,19 @@ void action(int cmd)
 
 void sig_handler(int signo)
 {
+    //send reset if sigint is sent
     if (signo == SIGINT)
     {
+        //resume if the system is paused
         if (is_paused == 1){
             action(RESUME);
         }
         reset();
     }
 
+    //if the watchdog sent the reset
     if (signo == SIGUSR1){
+        //resume if system is paused
         if (is_paused == 1){
             action(RESUME);
         }
@@ -274,6 +298,7 @@ void sig_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    //signal handlers for resets
     if (signal(SIGINT, sig_handler) == SIG_ERR)
         {
             printf("\ncan't catch SIGINT\n");
@@ -282,6 +307,7 @@ int main(int argc, char *argv[])
         {
             printf("\ncan't catch SIGUSR1\n");
         }
+
 	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
 
     size_t rows = 0;
@@ -292,8 +318,12 @@ int main(int argc, char *argv[])
 
     char display[rows][cols];
 
+    //display initializing
+
     create_display(rows, cols, display);
     show_display(rows, cols, display);
+
+    //pipes initializing
 
     char *fifomot1 = "/tmp/motor";
     mkfifo(fifomot1, 0666);
@@ -310,6 +340,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        //get pause if needed
         set_mode(1);
         if (c = get_key())
         {
@@ -318,10 +349,9 @@ int main(int argc, char *argv[])
                 action(c);
             }
         }
+        //get and set position, then show display on screen
         get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
         set_position(x, y, rows, cols, display);
         show_display(rows, cols, display);
     }
 }
-
-//create reset buttons

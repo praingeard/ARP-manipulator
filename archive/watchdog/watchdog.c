@@ -7,12 +7,17 @@
 #include <sys/types.h>
 #include "../logarp/logarp.h"
 
+/* The watchdog looks at the last modified time of the current logfile,
+ and resets the different processes after 1min of inactivity */
 void getFileCreationTime(char *path, struct tm *last_time)
 {
+    //get last modified time of a file
     struct stat attr;
     struct tm *last_modified_time;
     stat(path, &attr);
+    //last modified time added
     last_modified_time = localtime(&attr.st_mtim.tv_sec);
+    //only change last_time variable if it is different from the last modification of file 
     if (last_modified_time->tm_hour != last_time->tm_hour || last_modified_time->tm_min != last_time->tm_min || last_modified_time->tm_sec != last_time->tm_sec)
     {
         last_time->tm_hour = last_modified_time->tm_hour;
@@ -23,6 +28,7 @@ void getFileCreationTime(char *path, struct tm *last_time)
 
 void reset()
 {
+    //send reset signal to master via pipe
     char msg[1];
     msg[0] = 'r';
     int fd1,res;
@@ -38,6 +44,7 @@ void reset()
 
 int main(int argc, char *argv[])
 {
+    //starting log
 	log_entry(argv[1], "INFO",  __FILE__, __LINE__, "Execution started");
     time_t rawtime;
     struct tm last_time;
@@ -45,15 +52,18 @@ int main(int argc, char *argv[])
     int time_spent = 0;
     while (1)
     {
-        
+        //get last file modification 
         getFileCreationTime(argv[1], &last_time);
         time(&rawtime);
+        //get current time
         current_time = localtime(&rawtime);
         time_spent = (current_time->tm_hour * 3600 - last_time.tm_hour * 3600) + (current_time->tm_min * 60 - last_time.tm_min * 60) + (current_time->tm_sec - last_time.tm_sec);
         printf("time_spent : %i\n", time_spent);
-        if (time_spent > 3600)
+        //if nothing happened for a minute
+        if (time_spent > 60)
         {
             reset();
+            //wait a bit to not reset twice in a row
             sleep(30);
         }
     }
