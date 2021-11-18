@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "logarp.h"
 
 void getFileCreationTime(char *path, struct tm *last_time)
 {
@@ -35,8 +36,9 @@ void reset()
     return;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	log_entry(argv[1], "INFO",  __FILE__, __LINE__, "Execution started");
     time_t rawtime;
     struct tm last_time;
     struct tm *current_time;

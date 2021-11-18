@@ -13,6 +13,7 @@
 #define PAUSE 112
 #define RESUME 114
 const int commands[2] = {PAUSE, RESUME};
+#include "logarp.h"
 
 void reset()
 {
@@ -259,8 +260,12 @@ void action(int cmd)
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
+    if (signal(SIGINT, sig_handler) == SIG_ERR){
+            printf("\ncan't catch SIGINT\n");
+        }
     if (signal(SIGINT, sig_handler) == SIG_ERR)
     {
         printf("\ncan't catch RESET\n");
