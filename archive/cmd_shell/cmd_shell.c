@@ -38,6 +38,7 @@ les touches de commandes peuvent-elles être passées en arguments ?
 #define DOWN 50
 #define STOPZ 53
 #define UP 56
+
 const int commands[6] = {LEFT, STOPX, RIGHT, DOWN, STOPZ, UP};
 
 void set_mode(int want_key)

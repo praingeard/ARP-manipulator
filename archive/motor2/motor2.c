@@ -42,10 +42,10 @@ void sig_handler(int signo)
         char *myfifo = "/tmp/resetmot2";
         mkfifo(myfifo, 0666);
         int fd2;
-        fd2 = open(myfifo, O_WRONLY);
-        printf("RESET end\n");
-        fflush(stdout);
-        close(fd2);
+        // fd2 = open(myfifo, O_WRONLY);
+        // printf("RESET end\n");
+        // fflush(stdout);
+        // close(fd2);
         step = 0;
     }
     if (signo == SIGUSR1)

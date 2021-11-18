@@ -16,6 +16,25 @@
 const int commands[2] = {PAUSE, RESUME, RESET};
 #include "../logarp/logarp.h"
 
+int is_paused = 0;
+
+void sig_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        if (is_paused == 1){
+            action(RESUME);
+        }
+        reset();
+    }
+
+    if (signo == SIGUSR1){
+        if (is_paused == 1){
+            action(RESUME);
+        }
+    }
+}
+
 void reset()
 {
     char msg[1];
@@ -53,6 +72,7 @@ void set_mode(int want_key)
 
 void pause_prog()
 {
+    is_paused = 1;
     char msg[1];
     msg[0] = 'p';
     int fd1, res;
@@ -68,6 +88,7 @@ void pause_prog()
 
 void resume()
 {
+    is_paused = 0;
     char msg[1];
     msg[0] = 't';
     int fd1, res;
@@ -234,7 +255,7 @@ void action(int cmd)
     case PAUSE:
         pause_prog();
         int c;
-        while (1)
+        while (is_paused == 1)
         {
             set_mode(1);
             if (c = get_key())
@@ -242,14 +263,6 @@ void action(int cmd)
                 if (c == RESUME)
                 {
                     action(c);
-                    break;
-                }
-                else if (c == RESET)
-                {
-                    action(RESUME);
-                    sleep(1);
-                    action(RESET);
-                    break;
                 }
             }
         }
@@ -257,14 +270,19 @@ void action(int cmd)
     case RESUME:
         resume();
         break;
-    case RESET:
-        reset();
-        break;
     }
 }
 
 int main(int argc, char *argv[])
 {
+    if (signal(SIGINT, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGINT\n");
+        }
+    if (signal(SIGUSR1, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGUSR1\n");
+        }
 	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
 
     size_t rows = 0;

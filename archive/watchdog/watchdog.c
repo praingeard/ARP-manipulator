@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
     int time_spent = 0;
     while (1)
     {
-        char *path = "log.txt";
-        getFileCreationTime(path, &last_time);
+        
+        getFileCreationTime(argv[1], &last_time);
         time(&rawtime);
         current_time = localtime(&rawtime);
         time_spent = (current_time->tm_hour * 3600 - last_time.tm_hour * 3600) + (current_time->tm_min * 60 - last_time.tm_min * 60) + (current_time->tm_sec - last_time.tm_sec);

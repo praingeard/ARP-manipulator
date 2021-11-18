@@ -10,14 +10,16 @@
 #define NUMBER_OF_PROCESSES 5
 #define MAX_NAME_SIZE 40
 
-void reset(pid_t pid_mot1, pid_t pid_mot2)
+void reset(pid_t pid_mot1, pid_t pid_mot2, pid_t pid_display)
 {
 
     printf("starting RESET for %i and %i\n", pid_mot1, pid_mot2);
     fflush(stdout);
 
+    kill(pid_display, SIGUSR1);
     kill(pid_mot1, SIGINT);
     kill(pid_mot2, SIGINT);
+    
     char *myfifo = "/tmp/resetmot1";
     mkfifo(myfifo, 0666);
     char *myfifo2 = "/tmp/resetmot2";
@@ -26,10 +28,10 @@ void reset(pid_t pid_mot1, pid_t pid_mot2)
     int fd1, res1;
     char msg2[1];
     int fd2, res2;
-    fd1 = open(myfifo, O_RDONLY);
-    fd2 = open(myfifo2, O_RDONLY);
-    close(fd1);
-    close(fd2);
+    // fd1 = open(myfifo, O_RDONLY);
+    // fd2 = open(myfifo2, O_RDONLY);
+    // close(fd1);
+    // close(fd2);
     printf("RESET got \n");
     fflush(stdout);
 }
@@ -107,9 +109,17 @@ int main()
         fflush(stdout);
         pclose(cmd2);
 
+        char line3[80];
+        FILE *cmd3 = popen("pidof display", "r");
+        fgets(line3, 80, cmd3);
+        pid_t pid_display = strtoul(line3, NULL, 10);
+        printf("pid_process %i\n", pid_display);
+        fflush(stdout);
+        pclose(cmd3);
+
         if (msg[0] == 'r')
         {
-            reset(pid, pid2);
+            reset(pid, pid2, pid_display);
         }
         if (msg[0] == 'p')
         {
