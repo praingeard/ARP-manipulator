@@ -9,8 +9,8 @@
 #include <sys/stat.h>
 #include "../logarp/logarp.h"
 
-#define NUMBER_OF_PROCESSES_KONSOLE 5
-#define NUMBER_OF_PROCESSES_BACKGROUND 5
+#define NUMBER_OF_PROCESSES_KONSOLE 2
+#define NUMBER_OF_PROCESSES_BACKGROUND 3
 #define MAX_NAME_SIZE 40
 
 void reset(pid_t pid_mot1, pid_t pid_mot2, pid_t pid_display)
@@ -58,7 +58,7 @@ int main()
 
     //processes to launch in background
     char processes_background[NUMBER_OF_PROCESSES_BACKGROUND][MAX_NAME_SIZE] =
-        {"../watchdog/watchdog",
+        { "../watchdog/watchdog",
          "../motor1/motor1",
          "../motor2/motor2"};
     char actualpath [100];
@@ -79,11 +79,11 @@ int main()
         if (child == 0)
         {
             //exec in the background
-            char args[3];
+            char* args[3];
             args[0] =  realpath(processes_background[i], actualpath);
             args[1] = logname;
             args[2] = NULL;
-            execv(args[0], args);
+            execvp(args[0], args);
         }
     }
     while (1)

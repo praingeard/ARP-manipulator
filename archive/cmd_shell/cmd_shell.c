@@ -153,19 +153,22 @@ void action(int cmd, char *name_cmd)
         fifoNoaction = "/tmp/z_motor";
         // We send a letter to the motor, 'm' for minus, 's' for stop, 'p' for plus
         msg[0] = 'm';
-        name_cmd = "LEFT";
+        strncpy( name_cmd, "LEFT", 39);
+        name_cmd[39] = 0;
         break;
     case STOPX:
         fifo = "/tmp/x_motor";
         fifoNoaction = "/tmp/z_motor";
         msg[0] = 's';
-        name_cmd = "STOPX";
+        strncpy( name_cmd, "STOPX", 39);
+        name_cmd[39] = 0;
         break;
     case RIGHT:
         fifo = "/tmp/x_motor";
         fifoNoaction = "/tmp/z_motor";
         msg[0] = 'p';
-        name_cmd = "RIGHT";
+        strncpy( name_cmd, "RIGHT", 39);
+        name_cmd[39] = 0;
         break;
         
         //The commands down, up and stopz are for the motor 2
@@ -173,19 +176,22 @@ void action(int cmd, char *name_cmd)
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 'p';
-        name_cmd = "DOWN";
+        strncpy( name_cmd, "DOWN", 39);
+        name_cmd[39] = 0;
         break;
     case STOPZ:
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 's';
-        name_cmd = "STOPZ";
+        strncpy( name_cmd, "STOPZ", 39);
+        name_cmd[39] = 0;
         break;
     case UP:
         fifo = "/tmp/z_motor";
         fifoNoaction = "/tmp/x_motor";
         msg[0] = 'm';
-        name_cmd = "UP";
+        strncpy( name_cmd, "UP", 39);
+        name_cmd[39] = 0;
         break;
     }
 
@@ -213,7 +219,7 @@ void action(int cmd, char *name_cmd)
 int main(int argc, char *argv[])
 {
     int c;
-    char *name_cmd;
+    char name_cmd[40] = "NOTHING";
     
     // Entry to the logfile whose named was created by master and contained in argv[1]
 	log_entry(argv[1], "NOTICE", __FILE__, __LINE__, "Execution started");
@@ -229,10 +235,10 @@ int main(int argc, char *argv[])
             if (is_command(c, commands))
             { 
 				action(c, name_cmd);
-				char *msg = "The following command was pressed : ";
-				strcat(msg, name_cmd);
+				char msg[] = "The following command was pressed : ";
+				strcat(msg,name_cmd);
 				log_entry(argv[1], "INFO", __FILE__, __LINE__, msg);
-				printf("You pressed the command %s", name_cmd);
+				printf("You pressed the command %s \n", name_cmd);
                 fflush(stdout);
             }
             else
