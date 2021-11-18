@@ -29,7 +29,7 @@ les touches de commandes peuvent-elles être passées en arguments ?
 #include <sys/stat.h>
 #include <time.h>
 
-#include "logarp.h"
+#include "../logarp/logarp.h"
 
 // values for q, s, d and 2, 5, 8
 #define LEFT 113

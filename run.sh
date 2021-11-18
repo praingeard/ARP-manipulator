@@ -1,0 +1,2 @@
+cd archive
+./master/master

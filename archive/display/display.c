@@ -13,7 +13,7 @@
 #define PAUSE 112
 #define RESUME 114
 const int commands[2] = {PAUSE, RESUME};
-#include "logarp.h"
+#include "../logarp/logarp.h"
 
 void reset()
 {

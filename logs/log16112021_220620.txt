@@ -1,6 +1,0 @@
-[INFO] Time:16/11/2021 22:06:21, File:logarp.c(179) - Execution started
-[INFO] Time:16/11/2021 22:06:21, File:logarp.c(41) - Execution started
-[INFO] Time:16/11/2021 22:06:37, File:logarp.c(192) - a command has been given
-[INFO] Time:16/11/2021 22:06:47, File:logarp.c(192) - a command has been given
-[INFO] Time:16/11/2021 22:06:49, File:logarp.c(192) - a command has been given
-[INFO] Time:16/11/2021 22:06:55, File:logarp.c(192) - a command has been given

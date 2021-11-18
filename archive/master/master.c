@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <time.h>
 #include <string.h>
+#include "../logarp/logarp.h"
+
 
 #define NUMBER_OF_PROCESSES 5
 #define MAX_NAME_SIZE 40
