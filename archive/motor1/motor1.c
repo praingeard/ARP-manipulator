@@ -5,51 +5,14 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
 #include "../logarp/logarp.h"
 
 char *fifomot1 = "/tmp/motor";
 double x = 0.0;
 int step = 0;
-
-void sig_handler(int signo)
-{
-    printf("received SIGNAL\n");
-    fflush(stdout);
-    if (signo == SIGINT)
-    {
-        printf("received RESET\n");
-        fflush(stdout);
-        step = -1;
-        while (1)
-        {
-            if (x < 0.1)
-            {
-                break;
-            }
-            set_position(&step, &x);
-            write_position(x, fifomot1);
-            sleep(1);
-        }
-        char *myfifo = "/tmp/resetmot1";
-        mkfifo(myfifo, 0666);
-        int fd1;
-        // fd1 = open(myfifo, O_WRONLY);
-        // printf("RESET end\n");
-        // fflush(stdout);
-        // close(fd1);
-        step = 0;
-    }
-    if (signo == SIGUSR1)
-    {
-        printf("system paused\n");
-        fflush(stdout);
-        pause();
-    }
-    if (signo == SIGUSR2){
-        printf("system resumed\n");
-        fflush(stdout);
-    }
-}
 
 void read_input(int *step)
 {
@@ -109,6 +72,46 @@ void set_position(int *step, double *x)
         *x = 14;
 
     return;
+}
+
+void sig_handler(int signo)
+{
+    printf("received SIGNAL\n");
+    fflush(stdout);
+    if (signo == SIGINT)
+    {
+        printf("received RESET\n");
+        fflush(stdout);
+        step = -1;
+        while (1)
+        {
+            if (x < 0.1)
+            {
+                break;
+            }
+            set_position(&step, &x);
+            write_position(x, fifomot1);
+            sleep(1);
+        }
+        char *myfifo = "/tmp/resetmot1";
+        mkfifo(myfifo, 0666);
+        int fd1;
+        // fd1 = open(myfifo, O_WRONLY);
+        // printf("RESET end\n");
+        // fflush(stdout);
+        // close(fd1);
+        step = 0;
+    }
+    if (signo == SIGUSR1)
+    {
+        printf("system paused\n");
+        fflush(stdout);
+        pause();
+    }
+    if (signo == SIGUSR2){
+        printf("system resumed\n");
+        fflush(stdout);
+    }
 }
 
 int main(int argc, char *argv[])

@@ -12,7 +12,7 @@ void getFileCreationTime(char *path, struct tm *last_time)
     struct stat attr;
     struct tm *last_modified_time;
     stat(path, &attr);
-    last_modified_time = localtime(&attr.st_mtim);
+    last_modified_time = localtime(&attr.st_mtim.tv_sec);
     if (last_modified_time->tm_hour != last_time->tm_hour || last_modified_time->tm_min != last_time->tm_min || last_modified_time->tm_sec != last_time->tm_sec)
     {
         last_time->tm_hour = last_modified_time->tm_hour;

@@ -12,28 +12,10 @@
 
 #define PAUSE 112
 #define RESUME 114
-#define RESET 116
-const int commands[2] = {PAUSE, RESUME, RESET};
+const int commands[2] = {PAUSE, RESUME};
 #include "../logarp/logarp.h"
 
 int is_paused = 0;
-
-void sig_handler(int signo)
-{
-    if (signo == SIGINT)
-    {
-        if (is_paused == 1){
-            action(RESUME);
-        }
-        reset();
-    }
-
-    if (signo == SIGUSR1){
-        if (is_paused == 1){
-            action(RESUME);
-        }
-    }
-}
 
 void reset()
 {
@@ -270,6 +252,23 @@ void action(int cmd)
     case RESUME:
         resume();
         break;
+    }
+}
+
+void sig_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        if (is_paused == 1){
+            action(RESUME);
+        }
+        reset();
+    }
+
+    if (signo == SIGUSR1){
+        if (is_paused == 1){
+            action(RESUME);
+        }
     }
 }
 
