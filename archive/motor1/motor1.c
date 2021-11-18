@@ -9,6 +9,7 @@
 
 char *fifomot1 = "/tmp/motor";
 double x = 0.0;
+int step = 0;
 
 void sig_handler(int signo)
 {
@@ -18,7 +19,7 @@ void sig_handler(int signo)
     {
         printf("received RESET\n");
         fflush(stdout);
-        int step = -1;
+        step = -1;
         while (1)
         {
             if (x < 0.1)
@@ -36,6 +37,7 @@ void sig_handler(int signo)
         printf("RESET end\n");
         fflush(stdout);
         close(fd1);
+        step = 0;
     }
     if (signo == SIGUSR1)
     {
@@ -112,7 +114,6 @@ void set_position(int *step, double *x)
 int main(int argc, char *argv[])
 {
 	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
-    int step = 0;
 
     //initialisation of the random generator
     time_t t;

@@ -9,6 +9,7 @@
 
 char *fifomot2 = "/tmp/motor2";
 double y = 0.0;
+int step = 0;
 
 void sig_handler(int signo)
 {
@@ -17,7 +18,7 @@ void sig_handler(int signo)
     if (signo == SIGINT){
         printf("received RESET\n");
         fflush(stdout);
-        int step = -1;
+        step = -1;
         mkfifo(fifomot2, 0666);
         char *fifomot1 = "/tmp/motor";
         mkfifo(fifomot1, 0666);
@@ -45,6 +46,7 @@ void sig_handler(int signo)
         printf("RESET end\n");
         fflush(stdout);
         close(fd2);
+        step = 0;
     }
     if (signo == SIGUSR1)
     {
@@ -138,7 +140,6 @@ int main(int argc, char *argv[])
             printf("\ncan't catch SIGUSR2\n");
         }
 
-    int step = 0;
 
     //initialisation of the random generator
     time_t t;

@@ -7,13 +7,12 @@
 #include <string.h>
 #include "../logarp/logarp.h"
 
-
 #define NUMBER_OF_PROCESSES 5
 #define MAX_NAME_SIZE 40
 
 void reset(pid_t pid_mot1, pid_t pid_mot2)
 {
-		
+
     printf("starting RESET for %i and %i\n", pid_mot1, pid_mot2);
     fflush(stdout);
 
@@ -53,34 +52,31 @@ void resume(pid_t pid_mot1, pid_t pid_mot2)
     kill(pid_mot2, SIGUSR2);
 }
 
-
-
 int main()
 {
-	time_t reft = time(NULL);
+    time_t reft = time(NULL);
     struct tm *timenow;
     timenow = localtime(&reft);
-    char logname[30];
-    strftime(logname, 30, "./logs/log%d%m%Y_%H%M%S.txt", timenow);
-    
-      
+    char logname[40];
+    strftime(logname, 40, "../logs/log_%d-%m-%Y_%H:%M:%S.txt", timenow);
+
     const char *logFileName = logname;
     printf("le fichier à ouvrir est le suivant : %s", logFileName);
     fflush(stdout);
-    
+
     char processes[NUMBER_OF_PROCESSES][MAX_NAME_SIZE] =
-        {"./watchdog",
-         "./cmd_shell",
-         "./display",
-         "./motor1",
-         "./motor2"};
+        {"../watchdog/watchdog",
+         "../cmd_shell/cmd_shell",
+         "../display/display",
+         "../motor1/motor1",
+         "../motor2/motor2"};
+    char actualpath [100];
     for (int i = 0; i < NUMBER_OF_PROCESSES; i++)
     {
         pid_t child = fork();
         if (child == 0)
         {
-            char args[1] = {processes[i], NULL};
-            execl("/bin/konsole", "/bin/konsole", "-e", processes[i], logname, (char *)0);
+            execl("/bin/konsole", "/bin/konsole", "-e", realpath(processes[i], actualpath), logname, (char *)0);
         }
     }
     while (1)
@@ -113,7 +109,7 @@ int main()
 
         if (msg[0] == 'r')
         {
-            //reset(pid, pid2);
+            reset(pid, pid2);
         }
         if (msg[0] == 'p')
         {

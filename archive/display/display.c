@@ -12,7 +12,8 @@
 
 #define PAUSE 112
 #define RESUME 114
-const int commands[2] = {PAUSE, RESUME};
+#define RESET 116
+const int commands[2] = {PAUSE, RESUME, RESET};
 #include "../logarp/logarp.h"
 
 void reset()
@@ -78,14 +79,6 @@ void resume()
     fflush(stdout);
     close(fd1);
     return;
-}
-
-void sig_handler(int signo)
-{
-    if (signo == SIGINT)
-    {
-        reset();
-    }
 }
 
 void create_display(size_t rows, size_t cols, char (*display)[cols])
@@ -251,11 +244,21 @@ void action(int cmd)
                     action(c);
                     break;
                 }
+                else if (c == RESET)
+                {
+                    action(RESUME);
+                    sleep(1);
+                    action(RESET);
+                    break;
+                }
             }
         }
         break;
     case RESUME:
         resume();
+        break;
+    case RESET:
+        reset();
         break;
     }
 }
@@ -263,13 +266,6 @@ void action(int cmd)
 int main(int argc, char *argv[])
 {
 	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
-    if (signal(SIGINT, sig_handler) == SIG_ERR){
-            printf("\ncan't catch SIGINT\n");
-        }
-    if (signal(SIGINT, sig_handler) == SIG_ERR)
-    {
-        printf("\ncan't catch RESET\n");
-    }
 
     size_t rows = 0;
     size_t cols = 0;
