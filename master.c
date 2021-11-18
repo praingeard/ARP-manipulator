@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
+#include <string.h>
 
 #define NUMBER_OF_PROCESSES 5
 #define MAX_NAME_SIZE 40
 
 void reset(pid_t pid_mot1, pid_t pid_mot2)
 {
+		
     printf("starting RESET for %i and %i\n", pid_mot1, pid_mot2);
     fflush(stdout);
 
@@ -32,6 +35,17 @@ void reset(pid_t pid_mot1, pid_t pid_mot2)
 
 int main()
 {
+	time_t reft = time(NULL);
+    struct tm *timenow;
+    timenow = localtime(&reft);
+    char logname[30];
+    strftime(logname, 30, "./logs/log%d%m%Y_%H%M%S.txt", timenow);
+    
+      
+    const char *logFileName = logname;
+    printf("le fichier à ouvrir est le suivant : %s", logFileName);
+    fflush(stdout);
+    
     char processes[NUMBER_OF_PROCESSES][MAX_NAME_SIZE] =
         {"./watchdog",
          "./cmd_shell",
@@ -44,7 +58,7 @@ int main()
         if (child == 0)
         {
             char args[1] = {processes[i], NULL};
-            execl("/bin/konsole", "/bin/konsole", "-e", processes[i], (char *)0);
+            execl("/bin/konsole", "/bin/konsole", "-e", processes[i], logname, (char *)0);
         }
     }
     while (1)
@@ -77,7 +91,7 @@ int main()
 
         if (msg[0] == 'r')
         {
-            reset(pid, pid2);
+            //reset(pid, pid2);
         }
     }
 }

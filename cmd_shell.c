@@ -27,6 +27,9 @@ les touches de commandes peuvent-elles être passées en arguments ?
 #include <sys/types.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
+
+#include "logarp.h"
 
 // values for q, s, d and 2, 5, 8
 #define LEFT 113
@@ -170,10 +173,10 @@ void action(int cmd)
 
 
 
-
-int main()
+int main(int argc, char *argv[])
 {
     int c;
+	log_entry(argv[1], "INFO", __FILE__, __LINE__, "Execution started");
 
     while (1)
     {
@@ -186,12 +189,14 @@ int main()
             { //communication avec les moteurs, peut-être faut-il aussi se souvenir de la valeur précédente
                 printf("action\n");
                 fflush(stdout);
+                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "a command has been given");
                 action(c);
             }
             else
             {
                 printf("This is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up\n");
                 fflush(stdout);
+                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "a wrong key has been pressed");
                 noaction("/tmp/x_motor");
                 noaction("/tmp/z_motor");
             }

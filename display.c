@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <math.h>
+#include "logarp.h"
 
 void reset()
 {
@@ -139,8 +140,9 @@ void show_display(size_t rows, size_t cols, char (*display)[cols])
     return;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
     if (signal(SIGINT, sig_handler) == SIG_ERR){
             printf("\ncan't catch SIGINT\n");
         }

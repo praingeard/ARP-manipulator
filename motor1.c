@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/time.h>
+#include "logarp.h"
 
 char *fifomot1 = "/tmp/motor";
 double x = 0.0;
@@ -95,9 +96,9 @@ void set_position(int *step, double *x)
     return;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-
+	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
     int step = 0;
 
     //initialisation of the random generator
