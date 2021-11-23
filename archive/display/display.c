@@ -54,6 +54,21 @@ void set_mode(int want_key)
     }
 }
 
+void kill_prog()
+{
+    char msg[1];
+    msg[0] = 'q';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent kill\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
 void pause_prog()
 {
     //send pause value to master
@@ -287,6 +302,10 @@ void sig_handler(int signo)
         reset();
     }
 
+    if (signo == SIGTSTP){
+        kill_prog();
+    }
+
     //if the watchdog sent the reset
     if (signo == SIGUSR1){
         //resume if system is paused
@@ -306,6 +325,10 @@ int main(int argc, char *argv[])
     if (signal(SIGUSR1, sig_handler) == SIG_ERR)
         {
             printf("\ncan't catch SIGUSR1\n");
+        }
+    if (signal(SIGTSTP, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGTERM\n");
         }
 
 	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
@@ -346,6 +369,7 @@ int main(int argc, char *argv[])
         {
             if (c == PAUSE)
             {
+                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Programs in pause");
                 action(c);
             }
         }

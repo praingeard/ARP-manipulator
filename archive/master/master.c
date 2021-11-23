@@ -13,33 +13,87 @@
 #define NUMBER_OF_PROCESSES_BACKGROUND 3
 #define MAX_NAME_SIZE 40
 
-void reset(pid_t pid_mot1, pid_t pid_mot2, pid_t pid_display)
+pid_t getprogrampid(char *name){
+    char line[80];
+    char command[] = "pidof ";
+    strcat(command, name);
+    FILE *cmd = popen(command, "r");
+        fgets(line, 80, cmd);
+        pid_t pid = strtoul(line, NULL, 10);
+        printf("pid_process %i\n", pid);
+        fflush(stdout);
+        pclose(cmd);
+    return pid;
+}
+
+void reset()
 {
     //send reset signals to every process
-
+    pid_t pid_display = getprogrampid("display");
+    pid_t pid_mot1 = getprogrampid("motor1");
+    pid_t pid_mot2 = getprogrampid("motor2");
     kill(pid_display, SIGUSR1);
     kill(pid_mot1, SIGINT);
     kill(pid_mot2, SIGINT);
 }
 
-void pause_prog(pid_t pid_mot1, pid_t pid_mot2)
+void quit_all(){
+    pid_t pid_display = getprogrampid("display");
+    pid_t pid_mot1 = getprogrampid("motor1");
+    pid_t pid_mot2 = getprogrampid("motor2");
+    pid_t pid_watchdog = getprogrampid("watchdog");
+    pid_t pid_cmdshell = getprogrampid("cmd_shell");
+    pid_t pid_konsole;
+    for (int i = 0; i < NUMBER_OF_PROCESSES_KONSOLE; i++){
+        pid_konsole = getprogrampid("konsole");
+        kill(pid_konsole, SIGTERM);
+    }
+    kill(pid_display, SIGTERM);
+    kill(pid_mot1, SIGTERM);
+    kill(pid_mot2, SIGTERM);
+    kill(pid_watchdog, SIGTERM);
+    kill(pid_cmdshell, SIGTERM);
+    exit(EXIT_SUCCESS);
+}
+
+void pause_prog()
 {
     //send pause signals to motors
+    pid_t pid_mot1 = getprogrampid("motor1");
+    pid_t pid_mot2 = getprogrampid("motor2");
 
     kill(pid_mot1, SIGUSR1);
     kill(pid_mot2, SIGUSR2);
 }
 
-void resume(pid_t pid_mot1, pid_t pid_mot2)
+void resume()
 {
     //send resume signals to motors
+    pid_t pid_mot1 = getprogrampid("motor1");
+    pid_t pid_mot2 = getprogrampid("motor2");
 
     kill(pid_mot1, SIGUSR2);
     kill(pid_mot2, SIGUSR2);
 }
 
+void sig_handler(int signo)
+{
+    if (signo == SIGTSTP || signo == SIGINT){
+        quit_all();
+    }
+}
+
+
 int main()
 {
+    if (signal(SIGTSTP, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGTERM\n");
+        }
+     if (signal(SIGINT, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGINT\n");
+        }
     //logfile initializing
     time_t reft = time(NULL);
     struct tm *timenow;
@@ -100,43 +154,31 @@ int main()
         fflush(stdout);
         close(fd1);
 
-        //get pid of the motors and the display
-        char line[80];
-        FILE *cmd = popen("pidof motor1", "r");
-        fgets(line, 80, cmd);
-        pid_t pid = strtoul(line, NULL, 10);
-        printf("pid_process %i\n", pid);
-        fflush(stdout);
-        pclose(cmd);
-
-        char line2[80];
-        FILE *cmd2 = popen("pidof motor2", "r");
-        fgets(line2, 80, cmd2);
-        pid_t pid2 = strtoul(line2, NULL, 10);
-        printf("pid_process %i\n", pid2);
-        fflush(stdout);
-        pclose(cmd2);
-
-        char line3[80];
-        FILE *cmd3 = popen("pidof display", "r");
-        fgets(line3, 80, cmd3);
-        pid_t pid_display = strtoul(line3, NULL, 10);
-        printf("pid_process %i\n", pid_display);
-        fflush(stdout);
-        pclose(cmd3);
-
         //r is reset, p is pause, t is resume
         if (msg[0] == 'r')
         {
-            reset(pid, pid2, pid_display);
+            log_entry(logname, "INFO", __FILE__,  __LINE__, "Reset by user");
+            reset();
+        }
+         if (msg[0] == 'u')
+        {
+            log_entry(logname, "INFO", __FILE__,  __LINE__, "Reset by watchdog");
+            reset();
         }
         if (msg[0] == 'p')
         {
-            pause_prog(pid, pid2);
+            log_entry(logname, "INFO", __FILE__,  __LINE__, "Paused programs");
+            pause_prog();
         }
         if (msg[0] == 't')
         {
-            resume(pid, pid2);
+            log_entry(logname, "INFO", __FILE__,  __LINE__, "Resumed programs");
+            resume();
+        }
+        if (msg[0] == 'q')
+        {
+            log_entry(logname, "INFO", __FILE__,  __LINE__, "Terminating programs by user input");
+            quit_all();
         }
     }
 }

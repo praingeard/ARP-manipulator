@@ -78,6 +78,22 @@ void set_position(int *step, double *y)
     return;
 }
 
+void kill_prog()
+{
+    char msg[1];
+    msg[0] = 'q';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent kill\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+
 void sig_handler(int signo)
 {
     printf("received SIGNAL\n");
@@ -125,6 +141,9 @@ void sig_handler(int signo)
         printf("system resumed\n");
         fflush(stdout);
     }
+     if (signo == SIGTSTP){
+        kill_prog();
+    }
 }
 
 
@@ -142,6 +161,10 @@ int main(int argc, char *argv[])
         if (signal(SIGUSR2, sig_handler) == SIG_ERR)
         {
             printf("\ncan't catch SIGUSR2\n");
+        }
+         if (signal(SIGTSTP, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGTSTP\n");
         }
 
 

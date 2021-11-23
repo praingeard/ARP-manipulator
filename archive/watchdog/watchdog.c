@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <signal.h>
 #include "../logarp/logarp.h"
 
 /* The watchdog looks at the last modified time of the current logfile,
@@ -30,7 +31,7 @@ void reset()
 {
     //send reset signal to master via pipe
     char msg[1];
-    msg[0] = 'r';
+    msg[0] = 'u';
     int fd1,res;
     char *myfifo = "/tmp/reset";
     mkfifo(myfifo, 0666);
@@ -42,8 +43,38 @@ void reset()
     return;
 }
 
+void kill_prog()
+{
+    char msg[1];
+    msg[0] = 'q';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent kill\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+void sig_handler(int signo)
+{
+    if (signo == SIGTSTP || signo == SIGINT){
+        kill_prog();
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    if (signal(SIGTSTP, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGTSTP\n");
+        }
+     if (signal(SIGINT, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGINT\n");
+        }
     //starting log
 	log_entry(argv[1], "INFO",  __FILE__, __LINE__, "Execution started");
     time_t rawtime;

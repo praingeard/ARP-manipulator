@@ -214,10 +214,41 @@ void action(int cmd, char *name_cmd)
     
 }
 
+void kill_prog()
+{
+    char msg[1];
+    msg[0] = 'q';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent kill\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+void sig_handler(int signo)
+{
+    if (signo == SIGTSTP || signo == SIGINT){
+        kill_prog();
+    }
+}
+
 
 
 int main(int argc, char *argv[])
 {
+    if (signal(SIGTSTP, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGTERM\n");
+        }
+     if (signal(SIGINT, sig_handler) == SIG_ERR)
+        {
+            printf("\ncan't catch SIGINT\n");
+        }
+
     int c;
     char name_cmd[40] = "NOTHING";
     
