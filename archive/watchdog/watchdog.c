@@ -6,8 +6,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <string.h>
 #include "../logarp/logarp.h"
 
+char logname[40] = "log.txt";
 /* The watchdog looks at the last modified time of the current logfile,
  and resets the different processes after 1min of inactivity */
 void getFileCreationTime(char *path, struct tm *last_time)
@@ -31,7 +33,7 @@ void reset()
 {
     //send reset signal to master via pipe
     char msg[1];
-    msg[0] = 'u';
+    msg[0] = 'r';
     int fd1,res;
     char *myfifo = "/tmp/reset";
     mkfifo(myfifo, 0666);
@@ -61,12 +63,15 @@ void kill_prog()
 void sig_handler(int signo)
 {
     if (signo == SIGTSTP || signo == SIGINT){
+        log_entry(logname, "INFO",  __FILE__, __LINE__, "Program kill by user");
         kill_prog();
     }
 }
 
 int main(int argc, char *argv[])
 {
+    strncpy(logname, argv[1], 39);
+    logname[39] = 0;
     if (signal(SIGTSTP, sig_handler) == SIG_ERR)
         {
             printf("\ncan't catch SIGTSTP\n");
@@ -93,6 +98,7 @@ int main(int argc, char *argv[])
         //if nothing happened for a minute
         if (time_spent > 60)
         {
+            log_entry(argv[1], "INFO",  __FILE__, __LINE__, "Sent RESET");
             reset();
             //wait a bit to not reset twice in a row
             sleep(30);

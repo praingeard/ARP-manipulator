@@ -157,27 +157,18 @@ int main()
         //r is reset, p is pause, t is resume
         if (msg[0] == 'r')
         {
-            log_entry(logname, "INFO", __FILE__,  __LINE__, "Reset by user");
-            reset();
-        }
-         if (msg[0] == 'u')
-        {
-            log_entry(logname, "INFO", __FILE__,  __LINE__, "Reset by watchdog");
             reset();
         }
         if (msg[0] == 'p')
         {
-            log_entry(logname, "INFO", __FILE__,  __LINE__, "Paused programs");
             pause_prog();
         }
         if (msg[0] == 't')
         {
-            log_entry(logname, "INFO", __FILE__,  __LINE__, "Resumed programs");
             resume();
         }
         if (msg[0] == 'q')
         {
-            log_entry(logname, "INFO", __FILE__,  __LINE__, "Terminating programs by user input");
             quit_all();
         }
     }

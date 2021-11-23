@@ -15,6 +15,7 @@
 #define PAUSE 112
 #define RESUME 114
 const int commands[2] = {PAUSE, RESUME};
+char logname[40] = "log.txt";
 
 int is_paused = 0;
 
@@ -284,6 +285,7 @@ void action(int cmd)
         }
         break;
     case RESUME:
+        log_entry(logname, "INFO", __FILE__,  __LINE__, "Programs resumed");
         //send resume to master 
         resume();
         break;
@@ -295,6 +297,7 @@ void sig_handler(int signo)
     //send reset if sigint is sent
     if (signo == SIGINT)
     {
+        log_entry(logname, "INFO", __FILE__,  __LINE__, "Programs reset by user");
         //resume if the system is paused
         if (is_paused == 1){
             action(RESUME);
@@ -303,6 +306,7 @@ void sig_handler(int signo)
     }
 
     if (signo == SIGTSTP){
+        log_entry(logname, "INFO", __FILE__,  __LINE__, "Programs kill by user");
         kill_prog();
     }
 
@@ -317,6 +321,8 @@ void sig_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    strncpy(logname, argv[1], 39);
+    logname[39] = 0;
     //signal handlers for resets
     if (signal(SIGINT, sig_handler) == SIG_ERR)
         {
