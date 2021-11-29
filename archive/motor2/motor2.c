@@ -117,8 +117,7 @@ void kill_prog()
 // Handles all the signals
 void sig_handler(int signo)
 {
-    printf("received SIGNAL\n");
-    fflush(stdout);
+    
     if (signo == SIGINT){
         // We received a reset command
         // The motors now have to put the hoist back in its orignal position
