@@ -145,6 +145,12 @@ void sig_handler(int signo)
         //The system recieved a "pause" signal
         pause();
     }
+    if (signo == SIGIO)
+    {
+        //The system recieved a "stop" signal
+        step = 0;
+        pause();
+    }
     if (signo == SIGUSR2){
         //The system recieved a "resume" signal
     }
@@ -179,6 +185,10 @@ int main(int argc, char *argv[])
         if (signal(SIGUSR1, sig_handler) == SIG_ERR)
         {
             log_entry(argv[1], "ERROR", __FILE__,  __LINE__, "Can't catch SIGUSR1");
+        }
+        if (signal(SIGIO, sig_handler) == SIG_ERR)
+        {
+            log_entry(argv[1], "ERROR", __FILE__,  __LINE__, "Can't catch SIGIO");
         }
         if (signal(SIGUSR2, sig_handler) == SIG_ERR)
         {

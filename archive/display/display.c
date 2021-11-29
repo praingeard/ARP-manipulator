@@ -12,12 +12,14 @@
 #include "../logarp/logarp.h"
 
 //get keyboard keys 
+#define STOP 115
 #define PAUSE 112
 #define RESUME 114
-const int commands[2] = {PAUSE, RESUME};
+const int commands[3] = {PAUSE, RESUME, STOP};
 char logname[40] = "log.txt";
 
 int is_paused = 0;
+int is_stopped = 0;
 
 void reset()
 {
@@ -87,10 +89,29 @@ void pause_prog()
     return;
 }
 
+void stop_prog()
+{
+    //send pause value to master
+    is_stopped = 1;
+    char msg[1];
+    msg[0] = 's';
+    int fd1, res;
+    char *myfifo = "/tmp/reset";
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
+    printf(" sent stop\n");
+    fflush(stdout);
+    close(fd1);
+    return;
+}
+
+
 void resume()
 {
     //send resume value to master
     is_paused = 0;
+    is_stopped = 0;
     char msg[1];
     msg[0] = 't';
     int fd1, res;
@@ -264,14 +285,30 @@ int is_command(int pressed_key, const int cmds[6])
 
 void action(int cmd)
 {
+    int c;
     //actions for pause and reset
     switch (cmd)
     {
     case PAUSE:
         //pause
         pause_prog();
-        int c;
         while (is_paused == 1)
+        {
+            set_mode(1);
+            if (c = get_key())
+            {
+                //resume if needed
+                if (c == RESUME)
+                {
+                    action(c);
+                }
+            }
+        }
+        break;
+    case STOP:
+        //stop
+        stop_prog();
+        while (is_stopped == 1)
         {
             set_mode(1);
             if (c = get_key())
@@ -367,6 +404,9 @@ int main(int argc, char *argv[])
     printf("initialization complete \n");
     fflush(stdout);
 
+    printf("push S for emergency stop, P to pause, R to resume and CTRL^C to reset \n");
+    fflush(stdout);
+
     while (1)
     {
         //get pause if needed
@@ -378,7 +418,24 @@ int main(int argc, char *argv[])
                 log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Programs in pause");
                 action(c);
             }
+            else if (c == RESUME){
+                printf("Cannot resume, system is not STOPPED or PAUSED \n");
+                fflush(stdout);
+                printf("push S for emergency stop, P to pause, R to resume and CTRL^C to reset \n");
+                fflush(stdout);
+            }
+            else if (c == STOP){
+                log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Emergency stop");
+                action(c);
+            }
+            else{
+                printf("Invalid Command \n");
+                fflush(stdout);
+                printf("push S for emergency stop, P to pause, R to resume and CTRL^C to reset \n");
+                fflush(stdout);
+            }
         }
+        
         //get and set position, then show display on screen
         get_position(&x, &y, rows, cols, display, fifomot1, fifomot2);
         set_position(x, y, rows, cols, display);

@@ -160,6 +160,12 @@ void sig_handler(int signo)
         //The system recieved a "resume" signal
         fflush(stdout);
     }
+     if (signo == SIGIO)
+    {
+        //The system recieved a "stop" signal
+        step = 0;
+        pause();
+    }
      if (signo == SIGTSTP){
         // If it recieved ctrl+C : makes sure to exit all the processes
         kill_prog();
@@ -191,6 +197,10 @@ int main(int argc, char *argv[])
          if (signal(SIGTSTP, sig_handler) == SIG_ERR)
         {
             log_entry(argv[1], "ERROR", __FILE__,  __LINE__, "Can't catch SIGSTP");
+        }
+        if (signal(SIGIO, sig_handler) == SIG_ERR)
+        {
+            log_entry(argv[1], "ERROR", __FILE__,  __LINE__, "Can't catch SIGIO");
         }
 
 

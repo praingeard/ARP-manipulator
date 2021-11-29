@@ -66,6 +66,15 @@ void pause_prog()
     kill(pid_mot2, SIGUSR2);
 }
 
+void stop_prog()
+{
+    //send pause signals to motors
+    pid_t pid_mot1 = getprogrampid("motor1");
+    pid_t pid_mot2 = getprogrampid("motor2");
+    kill(pid_mot1, SIGIO);
+    kill(pid_mot2, SIGIO);
+}
+
 void resume()
 {
     //send resume signals to motors
@@ -154,7 +163,7 @@ int main()
         fflush(stdout);
         close(fd1);
 
-        //r is reset, p is pause, t is resume
+        //r is reset, p is pause, t is resume, q is quit, s is stop
         if (msg[0] == 'r')
         {
             reset();
@@ -170,6 +179,10 @@ int main()
         if (msg[0] == 'q')
         {
             quit_all();
+        }
+         if (msg[0] == 's')
+        {
+            stop_prog();
         }
     }
 }
