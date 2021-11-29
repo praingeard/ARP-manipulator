@@ -1,5 +1,4 @@
 cd archive 
 make clean
-rm -rf logs
+rm -f logs/*.*
 rm -f description_all.txt
-mkdir logs

@@ -1,4 +1,4 @@
-unzip archive.zip
+unzip -u archive.zip 
 cd archive
 make 
 make display/display

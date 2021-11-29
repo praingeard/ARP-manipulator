@@ -16,6 +16,7 @@ usage:
     - run.sh : run the executables once they have been installed.
     - cleanup.sh : remove the executables. You need to run install.sh again to recompile. Also clean logs.
     - uninstall.sh : delete the added files and the unziped archive.
+    - help.sh : shows this document and the description of the other processes if they have been installed
 
   processes : 
 
