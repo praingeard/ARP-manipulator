@@ -1,0 +1,8 @@
+[watchdog.c GENERAL DESCRIPTION]
+
+This process checks then state of the other processes by checking 
+the logfile whose name was given as arguments at execution.
+
+When no new entry is detected on the logfile for too long, it sends
+a reset request to the master using a pipe, which in returns sends 
+reset signals to all other processes.
