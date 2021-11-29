@@ -41,6 +41,8 @@ les touches de commandes peuvent-elles être passées en arguments ?
 // We store them in an array for convenience 
 const int commands[6] = {LEFT, STOPX, RIGHT, DOWN, STOPZ, UP};
 
+char logname[40] = "log.txt";
+
 
 
 void set_mode(int want_key)
@@ -240,13 +242,16 @@ void sig_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    strncpy(logname, argv[1], 39);
+    logname[39] = 0;
+
     if (signal(SIGTSTP, sig_handler) == SIG_ERR)
         {
-            printf("\ncan't catch SIGTERM\n");
+           log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGSTP");
         }
      if (signal(SIGINT, sig_handler) == SIG_ERR)
         {
-            printf("\ncan't catch SIGINT\n");
+            log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGINT");
         }
 
     int c;
