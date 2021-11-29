@@ -1,0 +1,16 @@
+[logarp.c GENERAL DESCRIPTION]
+
+This source code does not provide an executable but a function 
+to log information. In order to use this logging function, the 
+following line lust be added to the source code: 
+#include "../logarp/logarp.h"
+
+The function then requires the name of the logfile in which it 
+must write, then we can choose the TAG and a message. The logging
+function has the following descriptor:
+void log_entry(char *filename, char *nature, char *file, int line, char *msg );
+
+Th following call:
+log_entry(logFileName, "TAG", __FILE__, __LINE__, "message");
+will result in the following entry in the logfile:
+[TAG] dd/mm/YYYY hh:hh:ss, FILE fileaname(line) - message

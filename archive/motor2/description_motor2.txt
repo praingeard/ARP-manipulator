@@ -1,6 +1,6 @@
-[motor1.c GENERAL DESCRIPTION]
+[motor2.c GENERAL DESCRIPTION]
 
-This process handles the mouvment of the hoist on the vertical axis.
+This process handles the mouvment of the hoist on the horizontal axis.
 It retrieve commands from the process cmd_shell and sends update on 
 the position of the hoist to the display.
 

@@ -1,0 +1,23 @@
+[cmd_shell.c GENERAL DESCRIPTION]
+
+This process scans the user input konsole in order to get commands. 
+If the user presses down a key, it will first check if this key is 
+among the autorized commands, then take action. If it is a command, 
+then it sends a message to the appropriate motor using a named pipe.
+If not, then a friendly reminder of the available command keys is 
+displayed in the konsole.
+
+To avoid blocking one of the motor process, at each iteration of the 
+infinite while loop, cmd_shell sends a message to each of the motors,
+but if no command key was pressed, the message is a default one, which 
+will be ignored by the motors.
+
+ On the cmd_shell Konsole : 
+
+      Q : Go left for the x axis.
+      S : Stop the x axis. 
+      D : Go right for the x axis.
+      8 : Go up for the z axis.
+      5 : Stop the z axis. 
+      2 : Go down for the z axis.
+      CTRL^C or CTRL^Z : Quit the session.

@@ -1,5 +1,9 @@
 [GENERAL DESCRIPTION]
 
+authors:
+  - Paul Raingeard de la Bletiere
+  - Elea Papin
+
 usage: 
 
   prerequisites : 
