@@ -1,4 +1,5 @@
-[watchdog.c GENERAL DESCRIPTION]
+
+[watchdog.c]
 
 This process checks then state of the other processes by checking 
 the logfile whose name was given as arguments at execution.

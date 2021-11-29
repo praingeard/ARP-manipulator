@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
     struct tm last_time;
     struct tm *current_time;
     int time_spent = 0;
+    sleep(2);
     while (1)
     {
         //get last file modification 
@@ -94,7 +95,6 @@ int main(int argc, char *argv[])
         //get current time
         current_time = localtime(&rawtime);
         time_spent = (current_time->tm_hour * 3600 - last_time.tm_hour * 3600) + (current_time->tm_min * 60 - last_time.tm_min * 60) + (current_time->tm_sec - last_time.tm_sec);
-        printf("time_spent : %i\n", time_spent);
         //if nothing happened for a minute
         if (time_spent > 60)
         {

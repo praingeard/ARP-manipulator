@@ -7,11 +7,24 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include "../logarp/logarp.h"
 
 #define NUMBER_OF_PROCESSES_KONSOLE 2
 #define NUMBER_OF_PROCESSES_BACKGROUND 3
+#define NB_FORK NUMBER_OF_PROCESSES_KONSOLE + NUMBER_OF_PROCESSES_BACKGROUND
 #define MAX_NAME_SIZE 40
+
+//Wait for all children termination
+void waitForAll() {
+	int status;
+	pid_t pid;
+	int n = 0;
+	while (n < NB_FORK) {
+		pid = wait(&status);
+		n++;
+	}
+}
 
 pid_t getprogrampid(char *name){
     char line[80];
@@ -53,6 +66,7 @@ void quit_all(){
     kill(pid_mot2, SIGTERM);
     kill(pid_watchdog, SIGTERM);
     kill(pid_cmdshell, SIGTERM);
+    waitForAll();
     exit(EXIT_SUCCESS);
 }
 
@@ -125,13 +139,20 @@ int main()
          "../motor1/motor1",
          "../motor2/motor2"};
     char actualpath [100];
+    int pids[NB_FORK];
     for (int i = 0; i < NUMBER_OF_PROCESSES_KONSOLE; i++)
     {
         //initialize children
         pid_t child = fork();
+        if (child == -1) {
+			//Error handling
+			perror("fork");
+			return EXIT_FAILURE;
+        }
         if (child == 0)
         {
             //exec konsole command
+            pids[i] = getpid();
             execl("/bin/konsole", "/bin/konsole", "-e", realpath(processes_konsole[i], actualpath), logname, (char *)0);
         }
     }
@@ -139,9 +160,15 @@ int main()
     {
         //initialize children
         pid_t child = fork();
+        if (child == -1) {
+			//Error handling
+			perror("fork");
+			return EXIT_FAILURE;
+        }
         if (child == 0)
         {
             //exec in the background
+            pids[i + NUMBER_OF_PROCESSES_KONSOLE] = getpid();
             char* args[3];
             args[0] =  realpath(processes_background[i], actualpath);
             args[1] = logname;
@@ -149,6 +176,15 @@ int main()
             execvp(args[0], args);
         }
     }
+
+    //show pids
+    printf("Processes started with pids :");
+    for (int i = 0; i < NB_FORK; i++){
+        printf(" %i ", pids[i]);
+    }
+    printf("\n");
+    fflush(stdout);
+
     while (1)
     {
         //master code

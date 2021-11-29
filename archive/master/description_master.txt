@@ -1,4 +1,5 @@
-[master.c GENERAL DESCRIPTION]
+
+[master.c]
 
 This process has two main roles, it executes the other executables 
 using the system call fork(), and it insures the communication 

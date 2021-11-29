@@ -1,1 +1,1 @@
-#rm -rf archive
+rm -rf archive

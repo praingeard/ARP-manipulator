@@ -1,4 +1,5 @@
-[motor1.c GENERAL DESCRIPTION]
+
+[motor1.c]
 
 This process handles the mouvment of the hoist on the vertical axis.
 It retrieve commands from the process cmd_shell and sends update on 

@@ -1,4 +1,5 @@
-[cmd_shell.c GENERAL DESCRIPTION]
+
+[cmd_shell.c]
 
 This process scans the user input konsole in order to get commands. 
 If the user presses down a key, it will first check if this key is 

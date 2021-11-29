@@ -1,4 +1,5 @@
-[logarp.c GENERAL DESCRIPTION]
+
+[logarp.c]
 
 This source code does not provide an executable but a function 
 to log information. In order to use this logging function, the 

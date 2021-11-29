@@ -1,4 +1,5 @@
-[display.c GENERAL DESCRIPTION
+
+[display.c]
 
 This process is in charge of the visual interface showing the position 
 of the hoist. The hoist is represented by an x on a grid, this grid is 

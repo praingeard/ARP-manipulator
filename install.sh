@@ -1,7 +1,4 @@
-
-# touch pathname.txt
-# printf $1>>pathname.txt
-# unzip archive.zip -d $1
+unzip archive.zip
 cd archive
 make 
 make display/display
