@@ -1,0 +1,19 @@
+
+[display.c]
+
+This process is in charge of the visual interface showing the position 
+of the hoist. The hoist is represented by an x on a grid, this grid is 
+updated at each iteration of an infinite while loop. To know where the 
+hoist is located, display reads from to named pipes which are written 
+on by the tw0 motors.
+
+From the display konsole, it is possible to reset the system, to put it 
+in pause or to stop it (like with an emergency stop), then resume it.
+
+ On the display Konsole:
+
+      P : pause the processes. A resume signal can resume the processes on their previous state.
+      S : Emergency stop. A resume signal can resume the processes but thay will be stopped until a command is received.
+      R : Resume the processes.
+      CTRL^C : Reset. The manipulator will go back to its beginning value (0, 0). 
+      CTRL^Z : Quits the session.

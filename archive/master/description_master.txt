@@ -1,0 +1,15 @@
+
+[master.c]
+
+This process has two main roles, it executes the other executables 
+using the system call fork(), and it insures the communication 
+between them onces running.
+
+At the beginning of execution, master creates a logfile whose name 
+is passed as arguments to all children for a centralised logging.
+It then executes display and cmd_shell in two separate konsole 
+windows while executing motor1, motor2 and watchdog in the background.
+
+During execution, master handles signals and communication. When one 
+process recieve a signal, it sends a message to master, which can in 
+return send appropriate signals to the other processes.

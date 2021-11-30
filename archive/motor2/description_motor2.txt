@@ -1,0 +1,14 @@
+
+[motor2.c]
+
+This process handles the mouvment of the hoist on the horizontal axis.
+It retrieve commands from the process cmd_shell and sends update on 
+the position of the hoist to the display.
+
+At each iteration of an infinite loop, it reads a pipe to get user 
+commands. It updates the value of a step with the command and a random 
+error to set the position of the hoist. The new posititon is sent to 
+display using another pipe.
+
+In case of a reset, the process moves the hoist to the origin position
+and then stops.
