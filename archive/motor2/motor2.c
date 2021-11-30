@@ -33,13 +33,16 @@ void read_input(int *step)
     char *myfifo = "/tmp/x_motor";
     mkfifo(myfifo, 0666);
     //Open the pipe en this end
-    fd1 = open(myfifo, O_RDONLY);
+    if (fd1 = open(myfifo, O_RDONLY) == -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "horizontal command tube could not be opened");
+        exit(EXIT_FAILURE);
+    }
 
     // Read the command, which is always one character long 
     res = read(fd1, recieved, 2);
     if (res < 0)
     {
-        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Motor2 failed to recieve command");
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Horizontal command tube culd not be read");
     }
 
     //Close the pipe
@@ -68,8 +71,14 @@ void write_position(double y, char *fifomot2)
     sprintf(input_string, format_string,'y', y);
     
     //Use of a named pipe to write
-    fd1 = open(fifomot2, O_WRONLY);    
-    write(fd1, input_string, strlen(input_string) + 1);
+    if (fd1 = open(fifomot2, O_WRONLY)== -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Position tube could not be opened");
+        exit(EXIT_FAILURE);
+    }    
+    if (write(fd1, input_string, strlen(input_string) + 1) == -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Position tube could not be written on");
+        exit(EXIT_FAILURE);
+    }
     close(fd1);
 }
 
@@ -106,8 +115,14 @@ void kill_prog()
     mkfifo(myfifo, 0666);
     
     //Use of a named pipe for writing
-    fd1 = open(myfifo, O_WRONLY);
-    res = write(fd1, msg, 2);
+    if (fd1 = open(myfifo, O_WRONLY) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
+		exit(EXIT_FAILURE);
+    }
+    if (res = write(fd1, msg, 2) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be written on");
+		exit(EXIT_FAILURE);
+    }
     
     close(fd1);
     return;
@@ -180,7 +195,7 @@ int main(int argc, char *argv[])
     strncpy(logname, argv[1], 39);
     logname[39] = 0;
 
-	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
+	log_entry(argv[1], "NOTICE", __FILE__,  __LINE__, "Execution started");
 
     // declaration of the signals handler
     if (signal(SIGINT, sig_handler) == SIG_ERR){

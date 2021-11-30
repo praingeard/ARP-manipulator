@@ -60,9 +60,7 @@ void kill_prog()
     int fd1, res;
     char *myfifo = "/tmp/reset";
 
-    if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "INFO",  __FILE__, __LINE__, "kill tube already exists");
-    }
+    mkfifo(myfifo, 0666);
     
     if (fd1 = open(myfifo, O_WRONLY) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
@@ -100,7 +98,7 @@ int main(int argc, char *argv[])
             printf("\ncan't catch SIGINT\n");
         }
     //starting log
-	log_entry(argv[1], "INFO",  __FILE__, __LINE__, "Execution started");
+	log_entry(argv[1], "NOTICE",  __FILE__, __LINE__, "Execution started");
     time_t rawtime;
     struct tm last_time;
     struct tm *current_time;

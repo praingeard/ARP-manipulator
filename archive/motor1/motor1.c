@@ -30,15 +30,19 @@ void read_input(int *step)
 
     //Named pipe written on by cmd_shell
     char *myfifo = "/tmp/z_motor";
-    mkfifo(myfifo, 0666);
+    mkfifo(myfifo, 0666);    
 
     //Open the pipe en this end
-    fd1 = open(myfifo, O_RDONLY);
+    if(fd1 = open(myfifo, O_RDONLY) == -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Vertical command tube could not be opened");
+        exit(EXIT_FAILURE);
+    }
+
     // Read the command, which is always one character long 
     res = read(fd1, recieved, 2);
     if (res < 0)
     {
-        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Motor1 failed to recieve command");
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Vertical command tube could not be read");
     }
 
     //Close the pipe
@@ -59,7 +63,7 @@ void read_input(int *step)
 //This function sends the updated vertical position to the display process
 void write_position(double x, char *fifomot1)
 {
-    int fd1;
+    int fd1, res;
     //will contain the message to be send
     char input_string[80];
     char format_string[80] = "%c,%f";
@@ -68,8 +72,14 @@ void write_position(double x, char *fifomot1)
     sprintf(input_string, format_string, value, x);
 
     //Use of a named pipe to write
-    fd1 = open(fifomot1, O_WRONLY);    
-    write(fd1, input_string, strlen(input_string) + 1);
+    if (fd1 = open(fifomot1, O_WRONLY) == -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Position tube could not be opened");
+        exit(EXIT_FAILURE);
+    }    
+    if (res = write(fd1, input_string, strlen(input_string) + 1) == -1){
+        log_entry(logname, "ERROR", __FILE__,  __LINE__, "Position tube could not be written on");
+        exit(EXIT_FAILURE);
+    }    
     close(fd1);
 }
 
@@ -105,8 +115,14 @@ void kill_prog()
     mkfifo(myfifo, 0666);
 
     //Use of a named pipe for writing
-    fd1 = open(myfifo, O_WRONLY);
-    res = write(fd1, msg, 2);
+    if( fd1 = open(myfifo, O_WRONLY) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
+		exit(EXIT_FAILURE);
+    }
+    if (res = write(fd1, msg, 2) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be written on");
+		exit(EXIT_FAILURE);
+    }
     
     close(fd1);
     return;
@@ -166,7 +182,7 @@ int main(int argc, char *argv[])
     strncpy(logname, argv[1], 39);
     logname[39] = 0;
 
-	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
+	log_entry(argv[1], "NOTICE", __FILE__,  __LINE__, "Execution started");
 
     //initialisation of the random generator
     time_t t;

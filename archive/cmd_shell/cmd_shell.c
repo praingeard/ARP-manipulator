@@ -85,8 +85,10 @@ int get_key()
     ret_val = select(STDIN_FILENO + 1, &fs, 0, 0, &tv);
 
 	//We check if there has been an error
-    if (ret_val == -1)
-        perror("select()");
+    if (ret_val == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "use of select on sdtin failed");
+		exit(EXIT_FAILURE);
+    }
     else if (ret_val)
     {
         // (FD_ISSET(STDIN_FILENO, &fs)) will be true
@@ -125,15 +127,16 @@ void noaction(char *fifo)
 
 	// opening of the named pipe
     mkfifo(fifo, 0666);
-    fd = open(fifo, O_WRONLY);
-    res = write(fd, msg, strlen(msg) + 1);
-
-	//Check if no error occured
-    if (res < 0){
-        printf("no value\n");
-        fflush(stdout);
+    if (fd = open(fifo, O_WRONLY) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "command could not be opened");
+		exit(EXIT_FAILURE);
     }
-    close(fd);
+    if (res = write(fd, msg, strlen(msg) + 1) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "command tube could not be written on");
+		exit(EXIT_FAILURE);
+    }
+
+	close(fd);
     
 }
 
@@ -200,13 +203,16 @@ void action(int cmd, char *name_cmd)
 	//Now that the messages and the names of the pipes are set, we can call open them
     int res;
     mkfifo(fifo, 0666);
-    fd = open(fifo, O_WRONLY);
+    if (fd = open(fifo, O_WRONLY) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "command tube could not be opened");
+		exit(EXIT_FAILURE);
+    }
     
     
     res = write(fd, msg, strlen(msg) + 1);
     if (res < 0){
-        printf("no value\n");
-        fflush(stdout);
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "command tube could not be written on");
+		exit(EXIT_FAILURE);
     }
     
     close(fd);
@@ -223,10 +229,15 @@ void kill_prog()
     int fd1, res;
     char *myfifo = "/tmp/reset";
     mkfifo(myfifo, 0666);
-    fd1 = open(myfifo, O_WRONLY);
-    res = write(fd1, msg, 2);
-    printf(" sent kill\n");
-    fflush(stdout);
+    if (fd1 = open(myfifo, O_WRONLY) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
+		exit(EXIT_FAILURE);
+    }
+    if (res = write(fd1, msg, 2) == -1){
+        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be written on");
+		exit(EXIT_FAILURE);
+    }
+    
     close(fd1);
     return;
 }
@@ -245,6 +256,10 @@ int main(int argc, char *argv[])
     strncpy(logname, argv[1], 39);
     logname[39] = 0;
 
+    // Entry to the logfile whose named was created by master and contained in argv[1]
+	log_entry(argv[1], "NOTICE", __FILE__, __LINE__, "Execution started");
+
+
     if (signal(SIGTSTP, sig_handler) == SIG_ERR)
         {
            log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGSTP");
@@ -257,9 +272,6 @@ int main(int argc, char *argv[])
     int c;
     char name_cmd[40] = "NOTHING";
     
-    // Entry to the logfile whose named was created by master and contained in argv[1]
-	log_entry(argv[1], "NOTICE", __FILE__, __LINE__, "Execution started");
-
     while (1)
     {
         set_mode(1);

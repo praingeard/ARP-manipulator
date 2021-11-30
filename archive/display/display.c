@@ -416,22 +416,27 @@ int main(int argc, char *argv[])
 {
     strncpy(logname, argv[1], 39);
     logname[39] = 0;
+
+    log_entry(argv[1], "NOTICE", __FILE__,  __LINE__, "Execution started");
+
     //signal handlers for resets
     if (signal(SIGINT, sig_handler) == SIG_ERR)
         {
-            printf("\ncan't catch SIGINT\n");
+            log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGINT");
+        
         }
     if (signal(SIGUSR1, sig_handler) == SIG_ERR)
         {
-            printf("\ncan't catch SIGUSR1\n");
+            log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGUSR1");
+        
         }
     if (signal(SIGTSTP, sig_handler) == SIG_ERR)
         {
-            printf("\ncan't catch SIGTERM\n");
+            log_entry(argv[1], "ERROR", __FILE__, __LINE__, "Can't catch SIGSTP");
+        
         }
 
-	log_entry(argv[1], "INFO", __FILE__,  __LINE__, "Execution started");
-
+	
     size_t rows = 0;
     size_t cols = 0;
 
