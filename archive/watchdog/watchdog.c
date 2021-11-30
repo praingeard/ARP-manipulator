@@ -37,8 +37,7 @@ void reset()
     int fd1,res;
     char *myfifo = "/tmp/reset";
     if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be created");
-		exit(EXIT_FAILURE);
+        log_entry(logname, "INFO",  __FILE__, __LINE__, "reset tube already exists");
     }
 
     if (fd1 = open(myfifo, O_WRONLY) == -1){
@@ -62,11 +61,11 @@ void kill_prog()
     msg[0] = 'q';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-    
+
     if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be created");
-		exit(EXIT_FAILURE);
+        log_entry(logname, "INFO",  __FILE__, __LINE__, "kill tube already exists");
     }
+    
     if (fd1 = open(myfifo, O_WRONLY) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
 		exit(EXIT_FAILURE);

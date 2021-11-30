@@ -7,12 +7,12 @@ to be displayed upon execution
 
 for now : let's use the following keys :
 q : left
-s : stop horizontal mouvement
-d : right
+w : stop horizontal mouvement
+e : right
 
-8 : up
-5 : stop vertical mouvement
-2 : down
+u : up
+j : stop vertical mouvement
+n : down
 
 les touches de commandes peuvent-elles être passées en arguments ?
 */
@@ -33,11 +33,11 @@ les touches de commandes peuvent-elles être passées en arguments ?
 
 // values for q, s, d and 2, 5, 8
 #define LEFT 113
-#define STOPX 115
-#define RIGHT 100
-#define DOWN 50
-#define STOPZ 53
-#define UP 56
+#define STOPX 119
+#define RIGHT 101
+#define DOWN 110
+#define STOPZ 106
+#define UP 117
 // We store them in an array for convenience 
 const int commands[6] = {LEFT, STOPX, RIGHT, DOWN, STOPZ, UP};
 
@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
             else
             {
 				// print the working commands
-                printf("This is not a correct command key, use :\nq: left, s: stop horizontal, d: right\n2: down, 5: stop vertical, 8: up\n");
+                printf("This is not a correct command key, use :\nq: left, w: stop horizontal, e: right\nn: down, j: stop vertical, u: up\n");
                 fflush(stdout);
                 noaction("/tmp/x_motor");
                 noaction("/tmp/z_motor");

@@ -3,6 +3,7 @@
 authors:
   - Paul Raingeard de la Bletiere
   - Elea Papin
+  If there is any problem while running this code, we can be contacted with the email adresses p.raingeard.37@gmail.com and elea.papin@eleves.ec-nantes.fr
 
 usage: 
 

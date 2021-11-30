@@ -28,19 +28,9 @@ void reset()
     msg[0] = 'r';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-    if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be created");
-		exit(EXIT_FAILURE);
-    }
-
-    if (fd1 = open(myfifo, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (res = write(fd1, msg, 2) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be written on");
-		exit(EXIT_FAILURE);
-    };
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
     printf(" sent reset\n");
     fflush(stdout);
     close(fd1);
@@ -73,19 +63,9 @@ void kill_prog()
     msg[0] = 'q';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-   if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be created");
-		exit(EXIT_FAILURE);
-    }
-
-    if (fd1 = open(myfifo, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (res = write(fd1, msg, 2) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be written on");
-		exit(EXIT_FAILURE);
-    };
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
     printf(" sent kill\n");
     fflush(stdout);
     close(fd1);
@@ -100,19 +80,9 @@ void pause_prog()
     msg[0] = 'p';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-   if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "pause tube could not be created");
-		exit(EXIT_FAILURE);
-    }
-
-    if (fd1 = open(myfifo, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "pause tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (res = write(fd1, msg, 2) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "pause tube could not be written on");
-		exit(EXIT_FAILURE);
-    };
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
     printf(" sent pause\n");
     fflush(stdout);
     close(fd1);
@@ -127,19 +97,9 @@ void stop_prog()
     msg[0] = 's';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-   if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "stop tube could not be created");
-		exit(EXIT_FAILURE);
-    }
-
-    if (fd1 = open(myfifo, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "stop tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (res = write(fd1, msg, 2) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "stop tube could not be written on");
-		exit(EXIT_FAILURE);
-    };
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
     printf(" sent stop\n");
     fflush(stdout);
     close(fd1);
@@ -156,19 +116,9 @@ void resume()
     msg[0] = 't';
     int fd1, res;
     char *myfifo = "/tmp/reset";
-   if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "resume tube could not be created");
-		exit(EXIT_FAILURE);
-    }
-
-    if (fd1 = open(myfifo, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "resume tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (res = write(fd1, msg, 2) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "resume tube could not be written on");
-		exit(EXIT_FAILURE);
-    };
+    mkfifo(myfifo, 0666);
+    fd1 = open(myfifo, O_WRONLY);
+    res = write(fd1, msg, 2);
     printf(" sent resume\n");
     fflush(stdout);
     close(fd1);
@@ -248,22 +198,10 @@ void get_position(double *x, double *y, size_t rows, size_t cols, char (*display
     int resmot2;
 
     //use 2 pipes to get position for x and y
-    if (fd1 = open(fifomot1, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor1 tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (resmot1 = read(fd1, linemot1, 80) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor1 tube could not be read on");
-		exit(EXIT_FAILURE);
-    };
-    if (fd2 = open(fifomot2, O_WRONLY) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor2 tube could not be opened");
-		exit(EXIT_FAILURE);
-    };
-    if (resmot2 = read(fd2, linemot2, 80) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor2 tube could not be read on");
-		exit(EXIT_FAILURE);
-    };
+    fd1 = open(fifomot1, O_RDONLY);
+    fd2 = open(fifomot2, O_RDONLY);
+    resmot1 = read(fd1, linemot1, 80);
+    resmot2 = read(fd2, linemot2, 80);
 
     //lines are of format "x, position"
     char format_string_mot1[80] = "%c,%f";
@@ -454,15 +392,9 @@ int main(int argc, char *argv[])
     //pipes initializing
 
     char *fifomot1 = "/tmp/motor";
-    if (mkfifo(fifomot1, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor1 tube could not be created");
-		exit(EXIT_FAILURE);
-    }
+    mkfifo(fifomot1, 0666);
     char *fifomot2 = "/tmp/motor2";
-    if (mkfifo(fifomot2, 0666) == -1){
-        log_entry(logname, "ERROR",  __FILE__, __LINE__, "motor2 tube could not be created");
-		exit(EXIT_FAILURE);
-    }
+    mkfifo(fifomot2, 0666);
 
     double x = cols + 1;
     double y = rows + 1;
