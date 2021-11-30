@@ -36,18 +36,16 @@ void reset()
     msg[0] = 'r';
     int fd1,res;
     char *myfifo = "/tmp/reset";
-    if (mkfifo(myfifo, 0666) == -1){
-        log_entry(logname, "INFO",  __FILE__, __LINE__, "reset tube already exists");
-    }
+    mkfifo(myfifo, 0666);
 
     if (fd1 = open(myfifo, O_WRONLY) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be opened");
 		exit(EXIT_FAILURE);
-    };
+    }
     if (res = write(fd1, msg, 2) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "reset tube could not be written on");
 		exit(EXIT_FAILURE);
-    };
+    }
 
     printf(" sent reset\n");
     fflush(stdout);
@@ -69,11 +67,11 @@ void kill_prog()
     if (fd1 = open(myfifo, O_WRONLY) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be opened");
 		exit(EXIT_FAILURE);
-    };
+    }
     if (res = write(fd1, msg, 2) == -1){
         log_entry(logname, "ERROR",  __FILE__, __LINE__, "kill tube could not be written on");
 		exit(EXIT_FAILURE);
-    };
+    }
 
     printf(" sent kill\n");
     fflush(stdout);
