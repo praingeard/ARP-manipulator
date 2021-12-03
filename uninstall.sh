@@ -1,1 +1,3 @@
-rm -rf archive
+pwd=$(pwd)
+rm -rf $ARCHIVEVAR
+cd $pwd
