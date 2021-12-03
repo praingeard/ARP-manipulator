@@ -14,9 +14,9 @@ usage:
   to run the programs : 
     - first use install by giving it the path to extract your files : . install.sh WANTED_PATH
     - if no path is specified, everything is unzipped in the ./archive folder
-    BE CAREFUL : no slash in the call to install
-    - then run using ./run.sh
-    - to uninstall use ./uninstall.sh
+    BE CAREFUL : no slash in the call to the scripts
+    - then run using . run.sh
+    - to uninstall use . uninstall.sh
     - once installed, you can call help.sh to get more information about the different processes
 
   scripts :

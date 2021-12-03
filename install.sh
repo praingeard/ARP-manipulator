@@ -1,6 +1,6 @@
 pwd=$(pwd)
 if [ -z "$1" ]; then 
-    ARCHIVEVAR=./archive
+    ARCHIVEVAR=~/archive
 else 
     ARCHIVEVAR=$1
 fi
